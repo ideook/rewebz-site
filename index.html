@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rewebz — Website refresh for local businesses</title>
+    <meta
+      name="description"
+      content="rewebz helps local businesses launch cleaner, higher-converting website versions fast."
+    />
+    <style>
+      :root {
+        --bg: #0b1020;
+        --card: #111933;
+        --text: #eaf0ff;
+        --muted: #9fb0d4;
+        --accent: #56e39f;
+        --line: #22315f;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: radial-gradient(1200px 500px at 10% -20%, #1d2e63 0%, transparent 60%), var(--bg);
+        color: var(--text);
+      }
+
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 72px 20px;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+
+      h1 {
+        margin: 16px 0 12px;
+        font-size: clamp(34px, 6vw, 64px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+      }
+
+      .accent { color: var(--accent); }
+
+      p.lead {
+        margin: 0;
+        max-width: 700px;
+        font-size: clamp(16px, 2.4vw, 22px);
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .grid {
+        margin-top: 36px;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        background: linear-gradient(180deg, #131d3f, var(--card));
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 14px;
+      }
+
+      .cta {
+        margin-top: 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        color: var(--text);
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        color: #071112;
+        border-color: transparent;
+      }
+
+      .foot {
+        margin-top: 60px;
+        color: #7f91bc;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <span class="badge">REWEBZ</span>
+      <h1>Refresh old websites into <span class="accent">growth pages</span>.</h1>
+      <p class="lead">
+        We review your current website, build an improved version fast, and run it on a simple monthly plan.
+      </p>
+
+      <section class="grid">
+        <article class="card">
+          <h3>1) Quick Audit</h3>
+          <p>Find friction points in structure, trust signals, and conversion flow.</p>
+        </article>
+        <article class="card">
+          <h3>2) New Version</h3>
+          <p>Ship a cleaner, clearer page version focused on real customer action.</p>
+        </article>
+        <article class="card">
+          <h3>3) Monthly Operated</h3>
+          <p>No large upfront build fee. Keep improving with low monthly cost.</p>
+        </article>
+      </section>
+
+      <div class="cta">
+        <a class="btn primary" href="mailto:hello@rewebz.com">Get a draft proposal</a>
+        <a class="btn" href="#">View demo</a>
+      </div>
+
+      <p class="foot">© <span id="year"></span> rewebz.com</p>
+    </main>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
