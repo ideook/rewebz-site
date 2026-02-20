@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-02-20T18:20:07.866Z",
+  "count": 6,
+  "items": [
+    {
+      "slug": "2-pz7q",
+      "business_name": "알림2차 테스트",
+      "category": "판매업",
+      "region": "경기",
+      "goal": "신규 문의 증가",
+      "mockup_url": "https://2-pz7q.rewebz.com",
+      "updated_at": "2026-02-20T18:20:07.433Z"
+    },
+    {
+      "slug": "lead-xn74",
+      "business_name": "텔레그램알림 테스트",
+      "category": "서비스업",
+      "region": "서울",
+      "goal": "문의 전환율 개선",
+      "mockup_url": "https://lead-xn74.rewebz.com",
+      "updated_at": "2026-02-20T18:20:07.163Z"
+    },
+    {
+      "slug": "lead-3916",
+      "business_name": "리뉴얼치과 테스트",
+      "category": "서비스업",
+      "region": "인천",
+      "goal": "예약 전환율 증가 및 문의 개선",
+      "mockup_url": "https://lead-3916.rewebz.com",
+      "updated_at": "2026-02-20T18:20:06.798Z"
+    },
+    {
+      "slug": "lead-god0",
+      "business_name": "성장클리닉 테스트",
+      "category": "서비스업",
+      "region": "대전",
+      "goal": "예약 전환율 증가",
+      "mockup_url": "https://lead-god0.rewebz.com",
+      "updated_at": "2026-02-20T18:20:06.525Z"
+    },
+    {
+      "slug": "lead-ukfm",
+      "business_name": "리웹즈 테스트 상점2",
+      "category": "판매업",
+      "region": "부산",
+      "goal": "문의 증가",
+      "mockup_url": "https://lead-ukfm.rewebz.com",
+      "updated_at": "2026-02-20T18:20:06.233Z"
+    },
+    {
+      "slug": "lead-gcso",
+      "business_name": "리웹즈 테스트 상점",
+      "category": "서비스업",
+      "region": "서울",
+      "goal": "문의 전환율 개선",
+      "mockup_url": "https://lead-gcso.rewebz.com",
+      "updated_at": "2026-02-20T18:20:05.858Z"
+    }
+  ]
+}
