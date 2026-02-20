@@ -165,6 +165,17 @@
 
       (async () => {
         try {
+          // 1) If tenant host has generated source, serve that exact source first.
+          const siteRes = await fetch('/api/site-html', { cache: 'no-store' });
+          const siteData = await siteRes.json();
+          if (siteRes.ok && siteData.kind === 'tenant' && siteData.html) {
+            document.open();
+            document.write(siteData.html);
+            document.close();
+            return;
+          }
+
+          // 2) Fallback: dynamic mockup view (legacy)
           const [mockupRes, galleryRes] = await Promise.all([
             fetch('/api/mockup', { cache: 'no-store' }),
             fetch('/api/gallery', { cache: 'no-store' }).catch(() => null),
