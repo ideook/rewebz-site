@@ -46,40 +46,31 @@ echo "[$(date '+%F %T %Z')] run worker" >> logs/e2e-loop.log
 # regenerate per-site source + QA + deploy bookkeeping
 ./scripts/autobuild-runner.sh || true
 
-# fetch row status/slug from sheet
-python3 - <<'PY' "$REQ_ID" >> logs/e2e-loop.log
-import os,sys,json
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-req_id=sys.argv[1]
-email=os.environ.get('GOOGLE_SERVICE_ACCOUNT_EMAIL')
-key=(os.environ.get('GOOGLE_PRIVATE_KEY') or '').replace('\\n','\n')
-sheet=os.environ.get('GOOGLE_SHEET_ID')
-rng=os.environ.get('GOOGLE_SHEET_RANGE','시트1!A:N')
-creds=service_account.Credentials.from_service_account_info({
-  "type":"service_account",
-  "client_email":email,
-  "private_key":key,
-  "token_uri":"https://oauth2.googleapis.com/token"
-},scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'])
-svc=build('sheets','v4',credentials=creds,cache_discovery=False)
-vals=svc.spreadsheets().values().get(spreadsheetId=sheet,range=rng).execute().get('values',[])
-row=None
-for r in vals[1:]:
-  if len(r)>0 and r[0]==req_id:
-    row=r;break
-if not row:
-  print('row_not_found')
-  raise SystemExit(2)
-status = row[2] if len(row)>2 else ''
-slug = row[12] if len(row)>12 else ''
-url = row[13] if len(row)>13 else ''
-print(f'status={status} slug={slug} url={url}')
-if not slug:
-  raise SystemExit(3)
-PY
+# fetch row status/slug from sheet (node)
+ROW=$(node - "$REQ_ID" <<'NODE'
+const { google } = require('googleapis');
+(async()=>{
+  const reqId = process.argv[1];
+  const auth = new google.auth.JWT({
+    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    key: (process.env.GOOGLE_PRIVATE_KEY||'').replace(/\\n/g,'\n'),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+  });
+  const sheets = google.sheets({version:'v4', auth});
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.GOOGLE_SHEET_ID, range: process.env.GOOGLE_SHEET_RANGE || '시트1!A:N' });
+  const rows = res.data.values || [];
+  const row = rows.slice(1).find(r => (r[0]||'') === reqId);
+  if (!row) { console.log('row_not_found'); process.exit(2); }
+  const status = row[2] || '';
+  const slug = row[12] || '';
+  const url = row[13] || '';
+  console.log(`status=${status} slug=${slug} url=${url}`);
+})();
+NODE
+)
 
-SLUG=$(tail -n 1 logs/e2e-loop.log | sed -n 's/.*slug=\([^ ]*\).*/\1/p')
+echo "$ROW" >> logs/e2e-loop.log
+SLUG=$(echo "$ROW" | sed -n 's/.*slug=\([^ ]*\).*/\1/p')
 
 if [ -z "$SLUG" ]; then
   echo "[$(date '+%F %T %Z')] E2E fail: no slug" >> logs/e2e-loop.log
