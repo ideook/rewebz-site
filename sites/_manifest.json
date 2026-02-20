@@ -1,7 +1,25 @@
 {
-  "generated_at": "2026-02-20T18:35:05.429Z",
-  "count": 6,
+  "generated_at": "2026-02-20T18:36:10.137Z",
+  "count": 8,
   "items": [
+    {
+      "slug": "e2e-1771612559-4ifc",
+      "business_name": "E2E 자동검증 1771612559",
+      "category": "서비스업",
+      "region": "서울",
+      "goal": "문의 전환율 개선",
+      "mockup_url": "https://e2e-1771612559-4ifc.rewebz.com",
+      "updated_at": "2026-02-20T18:36:09.691Z"
+    },
+    {
+      "slug": "e2e-1771612541-yqti",
+      "business_name": "E2E 자동검증 1771612541",
+      "category": "서비스업",
+      "region": "서울",
+      "goal": "문의 전환율 개선",
+      "mockup_url": "https://e2e-1771612541-yqti.rewebz.com",
+      "updated_at": "2026-02-20T18:36:09.327Z"
+    },
     {
       "slug": "2-pz7q",
       "business_name": "알림2차 테스트",
@@ -9,7 +27,7 @@
       "region": "경기",
       "goal": "신규 문의 증가",
       "mockup_url": "https://2-pz7q.rewebz.com",
-      "updated_at": "2026-02-20T18:35:04.923Z"
+      "updated_at": "2026-02-20T18:36:08.959Z"
     },
     {
       "slug": "lead-xn74",
@@ -18,7 +36,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://lead-xn74.rewebz.com",
-      "updated_at": "2026-02-20T18:35:04.567Z"
+      "updated_at": "2026-02-20T18:36:08.667Z"
     },
     {
       "slug": "lead-3916",
@@ -27,7 +45,7 @@
       "region": "인천",
       "goal": "예약 전환율 증가 및 문의 개선",
       "mockup_url": "https://lead-3916.rewebz.com",
-      "updated_at": "2026-02-20T18:35:04.205Z"
+      "updated_at": "2026-02-20T18:36:08.391Z"
     },
     {
       "slug": "lead-god0",
@@ -36,7 +54,7 @@
       "region": "대전",
       "goal": "예약 전환율 증가",
       "mockup_url": "https://lead-god0.rewebz.com",
-      "updated_at": "2026-02-20T18:35:03.925Z"
+      "updated_at": "2026-02-20T18:36:08.119Z"
     },
     {
       "slug": "lead-ukfm",
@@ -45,7 +63,7 @@
       "region": "부산",
       "goal": "문의 증가",
       "mockup_url": "https://lead-ukfm.rewebz.com",
-      "updated_at": "2026-02-20T18:35:03.641Z"
+      "updated_at": "2026-02-20T18:36:07.841Z"
     },
     {
       "slug": "lead-gcso",
@@ -54,7 +72,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://lead-gcso.rewebz.com",
-      "updated_at": "2026-02-20T18:35:03.271Z"
+      "updated_at": "2026-02-20T18:36:07.462Z"
     }
   ]
 }

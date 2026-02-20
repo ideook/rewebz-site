@@ -23,14 +23,14 @@ RESP=$(curl -sS -X POST https://www.rewebz.com/api/apply \
   -H 'content-type: application/json' \
   --data "{\"business_name\":\"${BUSINESS}\",\"website_url\":\"https://example.com\",\"contact_name\":\"E2E\",\"contact_email\":\"${EMAIL}\",\"contact_phone\":\"010-0000-0000\",\"category\":\"서비스업\",\"region\":\"서울\",\"goal\":\"문의 전환율 개선\",\"notes\":\"e2e-loop\"}")
 
-REQ_ID=$(python3 - <<'PY'
+REQ_ID=$(python3 - "$RESP" <<'PY'
 import json,sys
 try:
   d=json.loads(sys.argv[1]);print(d.get('requestId',''))
 except Exception:
   print('')
 PY
-"$RESP")
+)
 
 if [ -z "$REQ_ID" ]; then
   echo "[$(date '+%F %T %Z')] E2E fail: apply response invalid: $RESP" >> logs/e2e-loop.log
