@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-20T18:20:07.866Z",
+  "generated_at": "2026-02-20T18:20:47.033Z",
   "count": 6,
   "items": [
     {
@@ -9,7 +9,7 @@
       "region": "경기",
       "goal": "신규 문의 증가",
       "mockup_url": "https://2-pz7q.rewebz.com",
-      "updated_at": "2026-02-20T18:20:07.433Z"
+      "updated_at": "2026-02-20T18:20:46.660Z"
     },
     {
       "slug": "lead-xn74",
@@ -18,7 +18,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://lead-xn74.rewebz.com",
-      "updated_at": "2026-02-20T18:20:07.163Z"
+      "updated_at": "2026-02-20T18:20:46.304Z"
     },
     {
       "slug": "lead-3916",
@@ -27,7 +27,7 @@
       "region": "인천",
       "goal": "예약 전환율 증가 및 문의 개선",
       "mockup_url": "https://lead-3916.rewebz.com",
-      "updated_at": "2026-02-20T18:20:06.798Z"
+      "updated_at": "2026-02-20T18:20:46.018Z"
     },
     {
       "slug": "lead-god0",
@@ -36,7 +36,7 @@
       "region": "대전",
       "goal": "예약 전환율 증가",
       "mockup_url": "https://lead-god0.rewebz.com",
-      "updated_at": "2026-02-20T18:20:06.525Z"
+      "updated_at": "2026-02-20T18:20:45.657Z"
     },
     {
       "slug": "lead-ukfm",
@@ -45,7 +45,7 @@
       "region": "부산",
       "goal": "문의 증가",
       "mockup_url": "https://lead-ukfm.rewebz.com",
-      "updated_at": "2026-02-20T18:20:06.233Z"
+      "updated_at": "2026-02-20T18:20:45.278Z"
     },
     {
       "slug": "lead-gcso",
@@ -54,7 +54,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://lead-gcso.rewebz.com",
-      "updated_at": "2026-02-20T18:20:05.858Z"
+      "updated_at": "2026-02-20T18:20:44.897Z"
     }
   ]
 }

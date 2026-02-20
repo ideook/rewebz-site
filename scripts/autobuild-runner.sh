@@ -11,6 +11,8 @@ if [ -f .env.worker ]; then
   set +a
 fi
 
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
 # lightweight health/progress checkpoint
 if [ -f scripts/lead-worker.js ]; then
   echo "[$(date '+%F %T %Z')] worker:present" >> logs/autobuild.log

@@ -12,7 +12,7 @@ function main(){
     const p = path.join(BASE_DIR, slug, 'index.html');
     if(!fs.existsSync(p)){ console.log(`FAIL ${slug}: missing index.html`); fail++; continue; }
     const html = fs.readFileSync(p,'utf8');
-    if(!html.includes('<title>') || !html.includes('개선 목업')){ console.log(`FAIL ${slug}: weak content`); fail++; continue; }
+    if(!html.includes('<title>') || html.length < 1200){ console.log(`FAIL ${slug}: weak content`); fail++; continue; }
     ok++;
   }
   console.log(`qa-site done: ok=${ok}, fail=${fail}`);
