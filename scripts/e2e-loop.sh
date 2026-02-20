@@ -47,10 +47,12 @@ echo "[$(date '+%F %T %Z')] run worker" >> logs/e2e-loop.log
 ./scripts/autobuild-runner.sh || true
 
 # fetch row status/slug from sheet (node)
-ROW=$(node - "$REQ_ID" <<'NODE'
+ROW=""
+for n in 1 2 3 4 5 6; do
+  ROW=$(node - "$REQ_ID" <<'NODE'
 const { google } = require('googleapis');
 (async()=>{
-  const reqId = process.argv[1];
+  const reqId = process.argv[2];
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     key: (process.env.GOOGLE_PRIVATE_KEY||'').replace(/\\n/g,'\n'),
@@ -60,7 +62,7 @@ const { google } = require('googleapis');
   const res = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.GOOGLE_SHEET_ID, range: process.env.GOOGLE_SHEET_RANGE || '시트1!A:N' });
   const rows = res.data.values || [];
   const row = rows.slice(1).find(r => (r[0]||'') === reqId);
-  if (!row) { console.log('row_not_found'); process.exit(2); }
+  if (!row) { console.log('row_not_found'); return; }
   const status = row[2] || '';
   const slug = row[12] || '';
   const url = row[13] || '';
@@ -68,6 +70,11 @@ const { google } = require('googleapis');
 })();
 NODE
 )
+  if [[ "$ROW" != "row_not_found" ]]; then
+    break
+  fi
+  sleep 5
+done
 
 echo "$ROW" >> logs/e2e-loop.log
 SLUG=$(echo "$ROW" | sed -n 's/.*slug=\([^ ]*\).*/\1/p')
