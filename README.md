@@ -40,3 +40,27 @@ Then set DNS in Cloudflare following Vercel instructions.
 - `https://rewebz.com`
 - `https://www.rewebz.com`
 - `https://demo.rewebz.com` (after wildcard DNS)
+
+---
+
+## Apply form + Google Sheets integration
+
+### Files added
+- `apply/index.html` → apply form (`/apply`)
+- `api/apply.js` → saves submissions to Google Sheets
+- `package.json` → includes `googleapis`
+
+### Required env vars (Vercel)
+
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_PRIVATE_KEY` (paste full key, keep `\n` line breaks)
+- `GOOGLE_SHEET_ID` = `1yVpuef9SuR0rW1D0tAIMJIpsdRI47SWN-tG2gc8GRHA`
+- `GOOGLE_SHEET_RANGE` = `시트1!A:N`
+
+### Sheet header order (A:N)
+
+`id, created_at, status, business_name, website_url, contact_name, contact_email, contact_phone, category, region, goal, notes, slug, mockup_url`
+
+### Service account permission
+
+Share the Google Sheet with the service account email as **Editor**.
