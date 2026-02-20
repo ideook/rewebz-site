@@ -23,6 +23,9 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
 const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
 
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+
 function baseSlug(input = '') {
   const s = (input || '')
     .toLowerCase()
@@ -164,6 +167,23 @@ async function updateRow(sheets, rowIndex, dataArr) {
   });
 }
 
+async function sendTelegram(text) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text,
+        disable_web_page_preview: true,
+      }),
+    });
+  } catch (_) {
+    // best-effort only
+  }
+}
+
 async function run() {
   if (!SHEET_ID || !SA_EMAIL || !SA_KEY) {
     throw new Error('Missing Google envs: GOOGLE_SHEET_ID / GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY');
@@ -225,12 +245,26 @@ async function run() {
       ]);
 
       console.log(`Processed ${id}: ${fqdn} (${nextStatus})`);
+      await sendTelegram([
+        '✅ rewebz 자동 처리 완료',
+        `- 업체: ${businessName || '(이름없음)'}`,
+        `- 상태: ${nextStatus}`,
+        `- URL: ${mockupUrl}`,
+        `- 메모: ${note}`,
+        `- ID: ${id}`,
+      ].join('\n'));
     } catch (err) {
       await updateRow(sheets, rowNum, [
         { col: 'C', val: 'DNS_ERROR' },
         { col: 'L', val: String(err.message).slice(0, 400) },
       ]);
       console.error(`Failed row ${rowNum}: ${err.message}`);
+      await sendTelegram([
+        '❌ rewebz 자동 처리 실패',
+        `- 업체: ${businessName || '(이름없음)'}`,
+        `- 에러: ${String(err.message).slice(0, 300)}`,
+        `- ID: ${id}`,
+      ].join('\n'));
     }
   }
 }
