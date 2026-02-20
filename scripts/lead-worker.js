@@ -17,14 +17,14 @@ const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
 const TARGET_CNAME = process.env.CF_TARGET_CNAME || 'cname.vercel-dns.com';
 
 function slugify(input = '') {
-  return input
+  const s = input
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9가-힣\s-]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
     .replace(/[\s_]+/g, '-')
     .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .replace(/[가-힣]/g, '') || `lead-${Date.now().toString(36)}`;
+    .replace(/^-|-$/g, '');
+  return s || `lead-${Date.now().toString(36)}`;
 }
 
 async function cfRequest(path, options = {}) {

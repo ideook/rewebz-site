@@ -8,4 +8,5 @@ if [ -f .env.worker ]; then
   set +a
 fi
 
-/usr/bin/env node scripts/lead-worker.js >> /Users/dukhyunlee/.openclaw/workspace/rewebz-site/logs/worker.log 2>&1
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+node scripts/lead-worker.js >> /Users/dukhyunlee/.openclaw/workspace/rewebz-site/logs/worker.log 2>&1
