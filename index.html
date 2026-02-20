@@ -3,175 +3,165 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rewebz — Website refresh for local businesses</title>
-    <meta
-      name="description"
-      content="rewebz helps local businesses launch cleaner, higher-converting website versions fast."
-    />
+    <title>rewebz</title>
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap');
+
       :root {
-        --bg: #0b1020;
-        --card: #111933;
-        --text: #eaf0ff;
-        --muted: #9fb0d4;
-        --accent: #56e39f;
-        --line: #22315f;
+        --bg: #0a1020;
+        --bg2: #121d3b;
+        --text: #eaf1ff;
+        --muted: #a5b4d6;
+        --line: #26335f;
+        --card: #111a35;
+        --accent: #79f3c2;
+        --accent2: #86a8ff;
       }
 
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background: radial-gradient(1200px 500px at 10% -20%, #1d2e63 0%, transparent 60%), var(--bg);
         color: var(--text);
+        background:
+          radial-gradient(1200px 600px at 5% -20%, rgba(134,168,255,.22), transparent 60%),
+          radial-gradient(900px 420px at 95% -15%, rgba(121,243,194,.15), transparent 55%),
+          linear-gradient(180deg, var(--bg), var(--bg2));
+        font-family: 'Manrope', -apple-system, sans-serif;
       }
 
-      .wrap {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 72px 20px;
-      }
-
+      .wrap { max-width: 1040px; margin: 0 auto; padding: 52px 20px 84px; }
       .badge {
-        display: inline-block;
-        padding: 6px 10px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        color: var(--muted);
-        font-size: 12px;
-        letter-spacing: 0.04em;
+        display: inline-flex; gap: 8px; align-items: center;
+        border: 1px solid var(--line); border-radius: 999px;
+        padding: 6px 12px; color: var(--muted); font-size: 12px; letter-spacing: .03em;
+        backdrop-filter: blur(6px);
       }
 
       h1 {
         margin: 16px 0 12px;
-        font-size: clamp(34px, 6vw, 64px);
-        line-height: 1.05;
+        font-family: 'Fraunces', serif;
+        font-size: clamp(34px, 6vw, 62px);
+        line-height: 1.02;
         letter-spacing: -0.02em;
       }
-
       .accent { color: var(--accent); }
+      .lead { margin: 0; max-width: 760px; color: var(--muted); font-size: clamp(16px, 2.4vw, 21px); line-height: 1.6; }
 
-      p.lead {
-        margin: 0;
-        max-width: 700px;
-        font-size: clamp(16px, 2.4vw, 22px);
-        color: var(--muted);
-        line-height: 1.6;
+      .hero {
+        border: 1px solid var(--line);
+        background: linear-gradient(160deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+        border-radius: 22px;
+        padding: 26px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.28);
       }
 
       .grid {
-        margin-top: 36px;
+        margin-top: 18px;
         display: grid;
-        gap: 14px;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
       }
-
       .card {
-        background: linear-gradient(180deg, #131d3f, var(--card));
+        background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
         border: 1px solid var(--line);
         border-radius: 16px;
-        padding: 18px;
+        padding: 16px;
       }
+      .card h3 { margin: 0 0 8px; font-size: 16px; }
+      .card p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 14px; }
 
-      .card h3 {
-        margin: 0 0 8px;
-        font-size: 18px;
-      }
-
-      .card p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.5;
-        font-size: 14px;
-      }
-
-      .cta {
-        margin-top: 40px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
+      .cta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
       .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 18px;
-        border-radius: 10px;
-        font-weight: 600;
-        text-decoration: none;
-        border: 1px solid var(--line);
-        color: var(--text);
+        text-decoration: none; color: var(--text); border: 1px solid var(--line);
+        border-radius: 10px; padding: 12px 16px; font-weight: 700; font-size: 14px;
       }
+      .btn.primary { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #08111f; border: none; }
 
-      .btn.primary {
-        background: var(--accent);
-        color: #071112;
-        border-color: transparent;
-      }
+      .foot { margin-top: 18px; font-size: 12px; color: #8395c0; }
 
-      .foot {
-        margin-top: 60px;
-        color: #7f91bc;
-        font-size: 13px;
-      }
+      .theme-clinic { --accent: #8ee9ff; --accent2: #7ec5ff; }
+      .theme-retail { --accent: #ffc980; --accent2: #ff8f8f; }
+      .theme-engineering { --accent: #96ffb0; --accent2: #7da6ff; }
     </style>
   </head>
   <body>
     <main class="wrap" id="app"></main>
 
     <script>
-      const root = document.getElementById('app');
+      const app = document.getElementById('app');
       const year = new Date().getFullYear();
 
       const rootTemplate = `
-        <span class="badge">REWEBZ</span>
-        <h1>Refresh old websites into <span class="accent">growth pages</span>.</h1>
-        <p class="lead">
-          We review your current website, build an improved version fast, and run it on a simple monthly plan.
-        </p>
-        <section class="grid">
-          <article class="card"><h3>1) Quick Audit</h3><p>Find friction points in structure, trust signals, and conversion flow.</p></article>
-          <article class="card"><h3>2) New Version</h3><p>Ship a cleaner, clearer page version focused on real customer action.</p></article>
-          <article class="card"><h3>3) Monthly Operated</h3><p>No large upfront build fee. Keep improving with low monthly cost.</p></article>
+        <section class="hero">
+          <span class="badge">REWEBZ · AUTO MOCKUP</span>
+          <h1>Refresh old websites into <span class="accent">growth pages</span>.</h1>
+          <p class="lead">신청이 들어오면 자동으로 서브도메인 생성 + 목업 페이지를 배포합니다.</p>
+          <div class="cta">
+            <a class="btn primary" href="/apply">지금 신청하기</a>
+          </div>
+          <p class="foot">© ${year} rewebz.com</p>
         </section>
-        <div class="cta">
-          <a class="btn primary" href="mailto:hello@rewebz.com">Get a draft proposal</a>
-          <a class="btn" href="/apply">Apply now</a>
-        </div>
-        <p class="foot">© ${year} rewebz.com</p>
       `;
 
-      const tenantTemplate = (d) => `
-        <span class="badge">${d.businessName}</span>
-        <h1>${d.businessName} <span class="accent">웹사이트 개선안</span></h1>
-        <p class="lead">${d.region} · ${d.category} · 목표: ${d.goal}</p>
-        <section class="grid">
-          <article class="card"><h3>메인 메시지 정리</h3><p>첫 화면에서 고객이 3초 내 서비스 가치를 이해하도록 구성합니다.</p></article>
-          <article class="card"><h3>문의 동선 개선</h3><p>문의/예약 CTA를 페이지 핵심 위치에 배치해 전환 가능성을 높입니다.</p></article>
-          <article class="card"><h3>신뢰요소 강화</h3><p>후기/사례/핵심지표 섹션을 추가해 실제 문의 행동으로 연결합니다.</p></article>
-        </section>
-        <div class="cta">
-          <a class="btn primary" href="${d.ctaLink}">${d.ctaLabel}</a>
-          ${d.websiteUrl ? `<a class="btn" href="${d.websiteUrl}" target="_blank" rel="noreferrer">기존 사이트 보기</a>` : ''}
-        </div>
-        <p class="foot">Mockup powered by rewebz · ${year}</p>
-      `;
+      function themeByCategory(category='') {
+        const c = category.toLowerCase();
+        if (c.includes('판매')) return 'theme-retail';
+        if (c.includes('엔지니어링') || c.includes('제조')) return 'theme-engineering';
+        return 'theme-clinic';
+      }
+
+      function cardsByGoal(goal='') {
+        const g = goal || '';
+        if (/예약|문의|전환/.test(g)) {
+          return [
+            ['첫 화면 메시지 정리', '3초 내 신뢰를 만드는 헤드라인과 핵심 가치 문장을 전면 배치합니다.'],
+            ['CTA 동선 강화', '상단/중단/하단 CTA를 일관되게 배치해 행동 전환률을 높입니다.'],
+            ['신뢰 요소 섹션', '후기·사례·핵심 수치로 문의 전 망설임을 줄입니다.'],
+          ];
+        }
+        return [
+          ['정보 구조 재정렬', '서비스 구조를 단순화해 고객이 필요한 정보를 빠르게 찾게 합니다.'],
+          ['모바일 우선 개선', '모바일 첫인상과 가독성을 기준으로 레이아웃을 재설계합니다.'],
+          ['브랜드 톤 정리', '문구와 시각 톤을 통일해 전문성과 신뢰감을 강화합니다.'],
+        ];
+      }
+
+      function tenantTemplate(d) {
+        const cards = cardsByGoal(d.goal)
+          .map(([title, desc]) => `<article class="card"><h3>${title}</h3><p>${desc}</p></article>`)
+          .join('');
+
+        return `
+          <section class="hero ${themeByCategory(d.category)}">
+            <span class="badge">${d.businessName} · ${d.region}</span>
+            <h1>${d.businessName}<br/><span class="accent">맞춤 목업 페이지</span></h1>
+            <p class="lead">업종: ${d.category} · 목표: ${d.goal}</p>
+
+            <section class="grid">${cards}</section>
+
+            <div class="cta">
+              <a class="btn primary" href="${d.ctaLink}">${d.ctaLabel}</a>
+              ${d.websiteUrl ? `<a class="btn" href="${d.websiteUrl}" target="_blank" rel="noreferrer">기존 사이트 보기</a>` : ''}
+            </div>
+
+            <p class="foot">Mockup Live · ${d.slug}.rewebz.com · ${year}</p>
+          </section>
+        `;
+      }
 
       (async () => {
         try {
           const res = await fetch('/api/mockup', { cache: 'no-store' });
           const data = await res.json();
-          if (!res.ok) throw new Error(data?.error || 'mockup load failed');
 
-          if (data.kind === 'tenant') {
+          if (res.ok && data.kind === 'tenant') {
             document.title = `${data.businessName} | rewebz mockup`;
-            root.innerHTML = tenantTemplate(data);
+            app.innerHTML = tenantTemplate(data);
           } else {
-            root.innerHTML = rootTemplate;
+            app.innerHTML = rootTemplate;
           }
-        } catch (e) {
-          root.innerHTML = rootTemplate;
+        } catch {
+          app.innerHTML = rootTemplate;
         }
       })();
     </script>

@@ -91,17 +91,41 @@ async function upsertCname(subdomain) {
     return { name, action: 'updated' };
   }
 
-  await cfRequest(`/zones/${CF_ZONE_ID}/dns_records`, {
-    method: 'POST',
-    body: JSON.stringify({
-      type: 'CNAME',
-      name,
-      content: TARGET_CNAME,
-      ttl: 1,
-      proxied: false,
-    }),
-  });
-  return { name, action: 'created' };
+  try {
+    await cfRequest(`/zones/${CF_ZONE_ID}/dns_records`, {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'CNAME',
+        name,
+        content: TARGET_CNAME,
+        ttl: 1,
+        proxied: false,
+      }),
+    });
+    return { name, action: 'created' };
+  } catch (e) {
+    // Handle conflict like code 81053 (existing A/AAAA/CNAME on same host)
+    const all = await cfRequest(`/zones/${CF_ZONE_ID}/dns_records?name=${encodeURIComponent(name)}`);
+    if (all.length) {
+      for (const rec of all) {
+        if (['A', 'AAAA', 'CNAME'].includes(rec.type)) {
+          await cfRequest(`/zones/${CF_ZONE_ID}/dns_records/${rec.id}`, { method: 'DELETE' });
+        }
+      }
+      await cfRequest(`/zones/${CF_ZONE_ID}/dns_records`, {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'CNAME',
+          name,
+          content: TARGET_CNAME,
+          ttl: 1,
+          proxied: false,
+        }),
+      });
+      return { name, action: 'recreated' };
+    }
+    throw e;
+  }
 }
 
 async function ensureVercelDomain(fqdn) {
@@ -169,11 +193,12 @@ async function run() {
     const currentSlug = (row[12] || '').trim();
 
     const shouldProcessNew = status === 'NEW';
+    const shouldRetryError = status === 'DNS_ERROR' && !!currentSlug;
     const shouldRepair = !!currentSlug && isMalformedSlug(currentSlug);
     const shouldAttachVercelOnly = status === 'DNS_DONE' && !!currentSlug && !isMalformedSlug(currentSlug);
-    if (!shouldProcessNew && !shouldRepair && !shouldAttachVercelOnly) continue;
+    if (!shouldProcessNew && !shouldRetryError && !shouldRepair && !shouldAttachVercelOnly) continue;
 
-    const nextSlug = shouldAttachVercelOnly ? currentSlug : makeSafeSlug(businessName, id);
+    const nextSlug = (shouldAttachVercelOnly || shouldRetryError) ? currentSlug : makeSafeSlug(businessName, id);
 
     try {
       if (shouldRepair && currentSlug !== nextSlug) {
