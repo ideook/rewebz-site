@@ -166,7 +166,7 @@
       (async () => {
         try {
           // 1) If tenant host has generated source, serve that exact source first.
-          const siteRes = await fetch('/api/site-html', { cache: 'no-store' });
+          const siteRes = await fetch('/api/sitehtml', { cache: 'no-store' });
           const siteData = await siteRes.json();
           if (siteRes.ok && siteData.kind === 'tenant' && siteData.html) {
             document.open();
