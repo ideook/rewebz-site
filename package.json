@@ -2,6 +2,9 @@
   "name": "rewebz-site",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "worker:leads": "node scripts/lead-worker.js"
+  },
   "dependencies": {
     "googleapis": "^144.0.0"
   }
