@@ -5,7 +5,7 @@
   "category": "서비스업",
   "region": "대전",
   "goal": "예약 전환율 증가",
-  "notes": "dns:updated | vercel:exists",
+  "notes": "dns:updated | vercel:exists | source:generated | source:generated",
   "slug": "lead-god0",
   "mockup_url": "https://lead-god0.rewebz.com"
 }
