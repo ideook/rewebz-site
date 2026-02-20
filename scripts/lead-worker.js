@@ -189,7 +189,7 @@ async function run() {
       const vercel = await ensureVercelDomain(fqdn);
       if (vercel.ok) {
         note += vercel.skipped ? ' | vercel:skipped' : vercel.already ? ' | vercel:exists' : ' | vercel:created';
-        if (!vercel.skipped) nextStatus = 'READY';
+        nextStatus = vercel.skipped ? 'DNS_DONE' : 'MOCKUP_LIVE';
       }
 
       await updateRow(sheets, rowNum, [

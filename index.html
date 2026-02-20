@@ -118,38 +118,62 @@
     </style>
   </head>
   <body>
-    <main class="wrap">
-      <span class="badge">REWEBZ</span>
-      <h1>Refresh old websites into <span class="accent">growth pages</span>.</h1>
-      <p class="lead">
-        We review your current website, build an improved version fast, and run it on a simple monthly plan.
-      </p>
-
-      <section class="grid">
-        <article class="card">
-          <h3>1) Quick Audit</h3>
-          <p>Find friction points in structure, trust signals, and conversion flow.</p>
-        </article>
-        <article class="card">
-          <h3>2) New Version</h3>
-          <p>Ship a cleaner, clearer page version focused on real customer action.</p>
-        </article>
-        <article class="card">
-          <h3>3) Monthly Operated</h3>
-          <p>No large upfront build fee. Keep improving with low monthly cost.</p>
-        </article>
-      </section>
-
-      <div class="cta">
-        <a class="btn primary" href="mailto:hello@rewebz.com">Get a draft proposal</a>
-        <a class="btn" href="#">View demo</a>
-      </div>
-
-      <p class="foot">© <span id="year"></span> rewebz.com</p>
-    </main>
+    <main class="wrap" id="app"></main>
 
     <script>
-      document.getElementById('year').textContent = new Date().getFullYear();
+      const root = document.getElementById('app');
+      const year = new Date().getFullYear();
+
+      const rootTemplate = `
+        <span class="badge">REWEBZ</span>
+        <h1>Refresh old websites into <span class="accent">growth pages</span>.</h1>
+        <p class="lead">
+          We review your current website, build an improved version fast, and run it on a simple monthly plan.
+        </p>
+        <section class="grid">
+          <article class="card"><h3>1) Quick Audit</h3><p>Find friction points in structure, trust signals, and conversion flow.</p></article>
+          <article class="card"><h3>2) New Version</h3><p>Ship a cleaner, clearer page version focused on real customer action.</p></article>
+          <article class="card"><h3>3) Monthly Operated</h3><p>No large upfront build fee. Keep improving with low monthly cost.</p></article>
+        </section>
+        <div class="cta">
+          <a class="btn primary" href="mailto:hello@rewebz.com">Get a draft proposal</a>
+          <a class="btn" href="/apply">Apply now</a>
+        </div>
+        <p class="foot">© ${year} rewebz.com</p>
+      `;
+
+      const tenantTemplate = (d) => `
+        <span class="badge">${d.businessName}</span>
+        <h1>${d.businessName} <span class="accent">웹사이트 개선안</span></h1>
+        <p class="lead">${d.region} · ${d.category} · 목표: ${d.goal}</p>
+        <section class="grid">
+          <article class="card"><h3>메인 메시지 정리</h3><p>첫 화면에서 고객이 3초 내 서비스 가치를 이해하도록 구성합니다.</p></article>
+          <article class="card"><h3>문의 동선 개선</h3><p>문의/예약 CTA를 페이지 핵심 위치에 배치해 전환 가능성을 높입니다.</p></article>
+          <article class="card"><h3>신뢰요소 강화</h3><p>후기/사례/핵심지표 섹션을 추가해 실제 문의 행동으로 연결합니다.</p></article>
+        </section>
+        <div class="cta">
+          <a class="btn primary" href="${d.ctaLink}">${d.ctaLabel}</a>
+          ${d.websiteUrl ? `<a class="btn" href="${d.websiteUrl}" target="_blank" rel="noreferrer">기존 사이트 보기</a>` : ''}
+        </div>
+        <p class="foot">Mockup powered by rewebz · ${year}</p>
+      `;
+
+      (async () => {
+        try {
+          const res = await fetch('/api/mockup', { cache: 'no-store' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.error || 'mockup load failed');
+
+          if (data.kind === 'tenant') {
+            document.title = `${data.businessName} | rewebz mockup`;
+            root.innerHTML = tenantTemplate(data);
+          } else {
+            root.innerHTML = rootTemplate;
+          }
+        } catch (e) {
+          root.innerHTML = rootTemplate;
+        }
+      })();
     </script>
   </body>
 </html>

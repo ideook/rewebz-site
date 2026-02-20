@@ -56,6 +56,7 @@ Then set DNS in Cloudflare following Vercel instructions.
 - `GOOGLE_PRIVATE_KEY` (paste full key, keep `\n` line breaks)
 - `GOOGLE_SHEET_ID` = `1yVpuef9SuR0rW1D0tAIMJIpsdRI47SWN-tG2gc8GRHA`
 - `GOOGLE_SHEET_RANGE` = `시트1!A:N`
+- `ROOT_DOMAIN` = `rewebz.com`
 
 ### Sheet header order (A:N)
 
