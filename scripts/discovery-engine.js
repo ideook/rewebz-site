@@ -336,6 +336,12 @@ async function main() {
 
           const plat = Number(p.location?.latitude || center.lat);
           const plng = Number(p.location?.longitude || center.lng);
+          const placeQuery = encodeURIComponent(p.displayName?.text || 'store');
+          const placeId = String(p.id || '').trim();
+          const mapLink = placeId
+            ? `https://www.google.com/maps/search/?api=1&query=${placeQuery}&query_place_id=${encodeURIComponent(placeId)}`
+            : `https://maps.google.com/?q=${plat},${plng}`;
+
           all.push({
             request_id: requestId,
             collected_at: new Date().toISOString(),
@@ -348,7 +354,7 @@ async function main() {
             reviews: p.userRatingCount ?? '',
             website_url: p.websiteUri || '',
             phone: p.nationalPhoneNumber || '',
-            map_link: `https://maps.google.com/?q=${plat},${plng}`,
+            map_link: mapLink,
             score: scored.score,
             reason: scored.reason,
             source: 'places-api-v1',
