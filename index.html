@@ -165,31 +165,36 @@
 
       (async () => {
         try {
-          // 1) If tenant host has generated source, serve that exact source first.
+          const host = (location.hostname || '').toLowerCase();
+          const isRoot = host === 'rewebz.com' || host === 'www.rewebz.com';
+
+          // 1) Tenant host: always serve generated per-site source when available.
           const siteRes = await fetch('/api/sitehtml', { cache: 'no-store' });
-          const siteData = await siteRes.json();
-          if (siteRes.ok && siteData.kind === 'tenant' && siteData.html) {
+          let siteData = null;
+          try { siteData = await siteRes.json(); } catch (_) {}
+
+          if (siteRes.ok && siteData && siteData.kind === 'tenant' && siteData.html) {
             document.open();
             document.write(siteData.html);
             document.close();
             return;
           }
 
-          // 2) Fallback: dynamic mockup view (legacy)
-          const [mockupRes, galleryRes] = await Promise.all([
-            fetch('/api/mockup', { cache: 'no-store' }),
-            fetch('/api/gallery', { cache: 'no-store' }).catch(() => null),
-          ]);
-
-          const mockupData = await mockupRes.json();
-          const galleryData = galleryRes ? await galleryRes.json() : { items: [] };
-
-          if (mockupRes.ok && mockupData.kind === 'tenant') {
-            document.title = `${mockupData.businessName} | rewebz mockup`;
-            app.innerHTML = tenantTemplate(mockupData);
+          // 2) Tenant host with missing source: show explicit pending page (no generic mockup fallback).
+          if (!isRoot) {
+            app.innerHTML = `
+              <section class="hero">
+                <span class="badge">REWEBZ · SOURCE PENDING</span>
+                <h1>개별 페이지 소스를 찾지 못했습니다.</h1>
+                <p class="lead">이 주소는 업체 전용 페이지입니다. 생성/배포 반영 중일 수 있으니 잠시 후 다시 시도해주세요.</p>
+              </section>
+            `;
             return;
           }
 
+          // 3) Root host: gallery only
+          const galleryRes = await fetch('/api/gallery', { cache: 'no-store' }).catch(() => null);
+          const galleryData = galleryRes ? await galleryRes.json() : { items: [] };
           app.innerHTML = rootTemplate(galleryData?.items || []);
         } catch {
           app.innerHTML = rootTemplate([]);
