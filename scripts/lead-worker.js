@@ -23,7 +23,7 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
 const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
 
-// notifications are handled only at OPEN_DONE stage (live-verify)
+// notifications are handled only at LIVE stage (live-verify)
 
 function baseSlug(input = '') {
   const s = (input || '')

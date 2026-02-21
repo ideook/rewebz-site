@@ -26,6 +26,6 @@ fi
 sleep 60
 ./scripts/dev-cron.sh >> logs/autobuild.log 2>&1 || echo "[$(date '+%F %T %Z')] step_fail:dev-cron" >> logs/autobuild.log
 
-# Stage 4: DEV_DONE -> OPEN_DONE (t+2m)
+# Stage 4: DEV_DONE -> LIVE (git push + deploy verify) (t+2m)
 sleep 60
 ./scripts/open-cron.sh >> logs/autobuild.log 2>&1 || echo "[$(date '+%F %T %Z')] step_fail:open-cron" >> logs/autobuild.log

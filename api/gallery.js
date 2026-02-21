@@ -34,7 +34,7 @@ module.exports = async (_req, res) => {
         slug: r[12] || '',
         mockup_url: r[13] || '',
       }))
-      .filter((x) => x.slug && x.mockup_url && ['OPEN_DONE','LIVE'].includes((x.status || '').trim()))
+      .filter((x) => x.slug && x.mockup_url && (x.status || '').trim() === 'LIVE')
       .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
       .slice(0, 24);
 
