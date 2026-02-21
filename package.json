@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "worker:leads": "node scripts/lead-worker.js"
+    "worker:leads": "node scripts/lead-worker.js",
+    "promote": "node scripts/promote-site.js"
   },
   "dependencies": {
     "googleapis": "^144.0.0"

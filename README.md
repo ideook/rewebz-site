@@ -65,3 +65,33 @@ Then set DNS in Cloudflare following Vercel instructions.
 ### Service account permission
 
 Share the Google Sheet with the service account email as **Editor**.
+
+---
+
+## Preview -> Production Promotion
+
+Use manual promotion when a preview tenant is approved.
+
+```bash
+node scripts/promote-site.js --slug lead-1234
+# or
+npm run promote -- --slug lead-1234
+```
+
+Optional flags:
+
+- `--dry-run` (no mutation)
+- `--timeoutSec 900`
+- `--no-telegram`
+
+Required env vars for promotion:
+
+- `ROOT_DOMAIN` (default `rewebz.com`)
+- `CF_TARGET_CNAME` (default `cname.vercel-dns.com`)
+- `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`
+- `VERCEL_TOKEN`, `VERCEL_PROJECT_ID` (`VERCEL_TEAM_SLUG` optional)
+
+Sheet/Telegram integration is optional but recommended:
+
+- Sheet: `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEET_ID`, `GOOGLE_SHEET_RANGE`
+- Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
