@@ -18,3 +18,6 @@ node scripts/design-plan.js >> logs/autobuild.log 2>&1 || echo "[$(date '+%F %T 
 
 # Stage 3: DESIGN_DONE -> DEV_DONE
 node scripts/dev-build.js >> logs/autobuild.log 2>&1 || echo "[$(date '+%F %T %Z')] step_fail:dev-build" >> logs/autobuild.log
+
+# Stage 4: DEV_DONE -> LIVE (health verify)
+node scripts/live-verify.js >> logs/autobuild.log 2>&1 || echo "[$(date '+%F %T %Z')] step_fail:live-verify" >> logs/autobuild.log

@@ -10,6 +10,22 @@ const SA_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const BASE_DIR = path.resolve(__dirname, '..', 'sites');
 const MAX_PER_RUN = Number(process.env.DEV_BUILD_MAX_PER_RUN || 1);
+const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
+const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
+const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+async function checkLive(url, tries=5) {
+  for (let i=0;i<tries;i++) {
+    try {
+      const r = await fetch(url, { method: 'HEAD' });
+      if (r.status >= 200 && r.status < 400) return { ok:true, code:r.status };
+    } catch (_) {}
+    await sleep(3000);
+  }
+  return { ok:false, code:0 };
+}
 
 function extractHtml(text = '') {
   const t = String(text || '').trim();
@@ -17,6 +33,20 @@ function extractHtml(text = '') {
   const html = fenced ? fenced[1].trim() : t;
   if (!/^<!doctype html>|^<html/i.test(html)) return '';
   return html;
+}
+
+async function ensureVercelDomain(fqdn) {
+  if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) return { ok: false, skipped: true };
+  const url = `https://api.vercel.com/v10/projects/${encodeURIComponent(VERCEL_PROJECT_ID)}/domains?teamSlug=${encodeURIComponent(VERCEL_TEAM_SLUG)}`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: fqdn }),
+  });
+  const j = await r.json();
+  if (r.ok) return { ok: true, created: true };
+  if (r.status === 409 || /already|in use|exists/i.test(JSON.stringify(j))) return { ok: true, created: false };
+  throw new Error(`vercel-domain-fail:${JSON.stringify(j).slice(0,200)}`);
 }
 
 function buildWithWebAgent(input) {
@@ -104,19 +134,32 @@ async function main() {
     }
 
     fs.writeFileSync(indexPath, html);
+    const fqdn = `${slug}.${ROOT_DOMAIN}`;
+    let domainNote = 'vercel:skipped';
+    try {
+      const vd = await ensureVercelDomain(fqdn);
+      if (vd.ok) domainNote = vd.created ? 'vercel:created' : 'vercel:exists';
+    } catch (e) {
+      domainNote = `vercel:error`;
+    }
+
+    const liveUrl = `https://${fqdn}`;
+    const live = await checkLive(liveUrl, 6);
+    const finalStatus = live.ok ? 'LIVE' : 'DEV_DONE';
+
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SHEET_ID,
       requestBody: {
         valueInputOption: 'RAW',
         data: [
-          { range: `시트1!C${i + 1}`, values: [['DEV_DONE']] },
-          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:done(gpt-5.3)`]] },
+          { range: `시트1!C${i + 1}`, values: [[finalStatus]] },
+          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:done(gpt-5.3) | ${domainNote} | health:${live.code||0}`]] },
         ],
       },
     });
 
     processed++;
-    console.log(`dev done for ${slug}`);
+    console.log(`dev done for ${slug} (${finalStatus})`);
   }
 
   console.log(`dev-build done: ${processed}`);

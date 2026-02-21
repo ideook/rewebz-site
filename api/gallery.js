@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const { google } = require('googleapis');
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
@@ -7,16 +5,8 @@ const SA_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const SHEET_RANGE = process.env.GOOGLE_SHEET_RANGE || '시트1!A:N';
 
-const MANIFEST_PATH = path.join(process.cwd(), 'sites', '_manifest.json');
-
 module.exports = async (_req, res) => {
   try {
-    if (fs.existsSync(MANIFEST_PATH)) {
-      const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
-      const items = (manifest.items || []).slice(0, 24);
-      return res.status(200).json({ ok: true, source: 'manifest', items });
-    }
-
     const auth = new google.auth.JWT({
       email: SA_EMAIL,
       key: SA_KEY,
@@ -44,7 +34,7 @@ module.exports = async (_req, res) => {
         slug: r[12] || '',
         mockup_url: r[13] || '',
       }))
-      .filter((x) => x.slug && x.mockup_url && ['MOCKUP_LIVE', 'READY'].includes((x.status || '').trim()))
+      .filter((x) => x.slug && x.mockup_url && ['LIVE'].includes((x.status || '').trim()))
       .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
       .slice(0, 24);
 
