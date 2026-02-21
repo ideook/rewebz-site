@@ -127,7 +127,7 @@ function generateWithDesignAgent(row) {
 
   const prompt = `당신은 웹디자인 전문 에이전트다. 아래 업체 정보를 바탕으로 단 하나의 랜딩페이지를 완전히 새로 설계해 HTML/CSS를 생성하라.\n요구사항:\n- 결과는 완전한 HTML 문서(<!doctype html> 포함)만 출력\n- 인라인 CSS 포함\n- 기존 샘플과 다른 레이아웃/스타일로 창의적으로 제작\n- 한국어 카피\n- CTA 포함\n- 외부 JS 라이브러리 금지\n\n${brief}`;
 
-  const cmd = `openclaw agent --agent design-studio --message ${JSON.stringify(prompt)} --json`;
+  const cmd = `openclaw agent --agent design-studio --thinking high --message ${JSON.stringify(prompt)} --json`;
   const raw = execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   const parsed = JSON.parse(raw);
   const text = parsed?.result?.payloads?.[0]?.text || '';

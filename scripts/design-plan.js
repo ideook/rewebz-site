@@ -36,7 +36,7 @@ function callDesignAgent(brief) {
     brief,
   ].join('\n');
 
-  const cmd = `openclaw agent --agent design-studio --message ${JSON.stringify(prompt)} --json`;
+  const cmd = `openclaw agent --agent design-studio --thinking high --message ${JSON.stringify(prompt)} --json`;
   const raw = execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   const parsed = JSON.parse(raw);
   return (parsed?.result?.payloads?.[0]?.text || '').trim();
