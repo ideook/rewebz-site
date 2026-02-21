@@ -30,7 +30,7 @@
         background: radial-gradient(1200px 500px at 10% -10%, rgba(109,211,255,0.18), transparent), var(--bg);
         color: var(--text);
       }
-      .wrap { max-width: 980px; margin: 32px auto 80px; padding: 0 18px; }
+      .wrap { max-width: 1380px; margin: 20px auto 80px; padding: 0 18px; }
       .head h1 { margin: 0; font-size: 34px; letter-spacing: -0.03em; }
       .head p { margin: 8px 0 0; color: var(--sub); }
       .head .links { margin-top: 14px; display: flex; gap: 8px; }
@@ -44,18 +44,25 @@
       }
 
       .grid {
-        margin-top: 20px;
+        margin-top: 18px;
         display: grid;
-        grid-template-columns: 1.25fr 1fr;
+        grid-template-columns: 1fr;
         gap: 14px;
       }
-      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
 
       .panel {
         background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--panel);
         border: 1px solid var(--line);
         border-radius: 16px;
         padding: 14px;
+      }
+      .map-panel {
+        padding: 12px;
+      }
+      .controls-panel {
+        max-width: 760px;
+        width: 100%;
+        margin: 0 auto;
       }
       .panel h2 { margin: 0 0 10px; font-size: 18px; }
       .panel h3 { margin: 0 0 10px; font-size: 14px; color: #d3e4ff; }
@@ -65,6 +72,7 @@
         display: flex;
         gap: 8px;
         margin-bottom: 10px;
+        flex-wrap: wrap;
       }
       input[type="text"], input[type="number"], textarea {
         width: 100%;
@@ -86,10 +94,13 @@
       .btn-main { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #061220; width: 100%; }
 
       #map {
-        height: 380px;
-        border-radius: 12px;
+        height: clamp(560px, 78vh, 920px);
+        border-radius: 14px;
         border: 1px solid #2a406f;
         overflow: hidden;
+      }
+      @media (max-width: 768px) {
+        #map { height: 70vh; }
       }
       .picked {
         margin-top: 10px;
@@ -133,7 +144,7 @@
       </div>
 
       <form id="discoveryForm" class="grid">
-        <section class="panel">
+        <section class="panel map-panel">
           <h2>1) 위치 선택</h2>
           <p class="sub">기본은 지도 클릭입니다. 검색/현재 위치 버튼으로 보조할 수 있어요.</p>
 
@@ -153,7 +164,7 @@
           </div>
         </section>
 
-        <section class="panel">
+        <section class="panel controls-panel">
           <h2>2) 업종 선택</h2>
           <p class="sub">복수 선택 가능. 높은 위계 분류로 시작합니다.</p>
           <div class="category-grid" id="categoryGrid"></div>
