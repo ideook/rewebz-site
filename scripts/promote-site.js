@@ -505,6 +505,7 @@ async function main() {
   const rowHit = resolved.rowHit || await findSheetRowBySlug(sheets, slug).catch(() => null);
   const row = rowHit?.row || [];
   const rowNum = rowHit?.rowNum || 0;
+  const rowId = (row[0] || '').trim();
   const rowStatus = (row[2] || '').trim();
   const rowNotes = row[11] || '';
   const rowUrl = row[13] || '';
@@ -563,9 +564,10 @@ async function main() {
     await sendTelegram([
       '✅ rewebz PROMOTED',
       `- slug: ${slug}`,
+      rowId ? `- ID: ${rowId}` : '',
       `- prod: ${prodUrl}`,
       `- checks: dns(${dns.action}) + vercel(${vd.action}) + head(${headCode}) + sitehtml(${prodSite.code}) + marker(ok)`,
-    ].join('\n'), opts.noTelegram);
+    ].filter(Boolean).join('\n'), opts.noTelegram);
 
     console.log(`[promote] success ${slug} -> ${prodUrl}`);
   } catch (err) {
