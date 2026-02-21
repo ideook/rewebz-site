@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "worker:leads": "node scripts/lead-worker.js",
-    "promote": "node scripts/promote-site.js"
+    "promote": "node scripts/promote-site.js",
+    "discovery:run": "node scripts/discovery-engine.js",
+    "discovery:approve": "node scripts/discovery-approve.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",

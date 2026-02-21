@@ -1,5 +1,25 @@
 const { google } = require('googleapis');
 
+const DISCOVERY_HEADERS = [
+  'request_id',      // A
+  'created_at',      // B
+  'stage',           // C
+  'lat',             // D
+  'lng',             // E
+  'metric_m',        // F (radius for request, distance for candidate)
+  'category',        // G
+  'title',           // H
+  'notes',           // I
+  'map_link',        // J
+  'ref_id',          // K (place id or internal ref)
+  'website_url',     // L
+  'phone',           // M
+  'rating',          // N
+  'reviews',         // O
+  'score',           // P
+  'source',          // Q
+];
+
 function pick(obj, key) {
   return (obj?.[key] || '').toString().trim();
 }
@@ -7,6 +27,21 @@ function pick(obj, key) {
 function asNum(v, fallback = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function parseCategories(body) {
+  if (Array.isArray(body?.categories)) {
+    return body.categories.map((x) => String(x || '').trim()).filter(Boolean);
+  }
+  const raw = pick(body, 'categories');
+  if (!raw) return [];
+  return raw.split(',').map((x) => x.trim()).filter(Boolean);
+}
+
+function discoverySheetNameFromRange(range = '') {
+  const raw = String(range || '').trim();
+  if (!raw.includes('!')) return raw || 'Discovery';
+  return raw.split('!')[0] || 'Discovery';
 }
 
 async function sendTelegram(text) {
@@ -25,35 +60,6 @@ async function sendTelegram(text) {
       }),
     });
   } catch (_) {}
-}
-
-function parseCategories(body) {
-  if (Array.isArray(body?.categories)) {
-    return body.categories.map((x) => String(x || '').trim()).filter(Boolean);
-  }
-  const raw = pick(body, 'categories');
-  if (!raw) return [];
-  return raw.split(',').map((x) => x.trim()).filter(Boolean);
-}
-
-const DISCOVERY_HEADERS = [
-  'request_id',
-  'created_at',
-  'stage',
-  'center_lat',
-  'center_lng',
-  'radius_m',
-  'categories',
-  'keyword',
-  'notes',
-  'map_link',
-  'collector',
-];
-
-function discoverySheetNameFromRange(range = '') {
-  const raw = String(range || '').trim();
-  if (!raw.includes('!')) return raw || 'Discovery';
-  return raw.split('!')[0] || 'Discovery';
 }
 
 module.exports = async (req, res) => {
@@ -93,7 +99,7 @@ module.exports = async (req, res) => {
     };
 
     const discoverySheetId = process.env.GOOGLE_DISCOVERY_SHEET_ID || '';
-    const discoveryRange = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:K';
+    const discoveryRange = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:Q';
 
     let saved = false;
     if (discoverySheetId && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
@@ -105,17 +111,17 @@ module.exports = async (req, res) => {
 
       const sheets = google.sheets({ version: 'v4', auth: client });
       const sheetName = discoverySheetNameFromRange(discoveryRange);
-      const headerRange = `${sheetName}!A1:K1`;
-      const appendRange = `${sheetName}!A2:K`;
+      const headerRange = `${sheetName}!A1:Q1`;
+      const appendRange = `${sheetName}!A2:Q`;
 
-      // Ensure headers exist (or recover if missing)
       const head = await sheets.spreadsheets.values.get({
         spreadsheetId: discoverySheetId,
         range: headerRange,
       }).catch(() => ({ data: { values: [] } }));
 
       const firstCell = String(head?.data?.values?.[0]?.[0] || '').trim().toLowerCase();
-      if (firstCell !== 'request_id') {
+      const headerSize = head?.data?.values?.[0]?.length || 0;
+      if (firstCell !== 'request_id' || headerSize < DISCOVERY_HEADERS.length) {
         await sheets.spreadsheets.values.update({
           spreadsheetId: discoverySheetId,
           range: headerRange,
@@ -138,10 +144,16 @@ module.exports = async (req, res) => {
             payload.center_lng,
             payload.radius_m,
             payload.categories.join(', '),
-            payload.keyword,
+            payload.keyword || '(request)',
             payload.notes,
             payload.map_link,
-            '', // reserved: collector/owner
+            '', // ref_id
+            '', // website_url
+            '', // phone
+            '', // rating
+            '', // reviews
+            '', // score
+            'intake',
           ]],
         },
       });

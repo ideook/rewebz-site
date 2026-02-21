@@ -68,21 +68,40 @@ Share the Google Sheet with the service account email as **Editor**.
 
 ---
 
-## Discovery intake form (new)
+## Discovery intake + research engine
 
-- Page: `/discover`
-- API: `POST /api/discovery-intake`
-- Required payload:
-  - `center_lat`, `center_lng`
-  - `categories[]` (multi)
-  - optional: `radius_m`, `keyword`, `notes`, `map_link`
+- Intake page: `/discover`
+- Intake API: `POST /api/discovery-intake`
+- Engine script: `scripts/discovery-engine.js`
+- Approval script: `scripts/discovery-approve.js`
 
-Optional sheet save envs:
+### Discovery sheet columns (A:Q)
+
+`request_id, created_at, stage, lat, lng, metric_m, category, title, notes, map_link, ref_id, website_url, phone, rating, reviews, score, source`
+
+- Request row stage: `DISCOVERY_NEW -> DISCOVERY_COLLECTING -> DISCOVERY_DONE`
+- Candidate row stage: `FOUND`
+- Approval stage: `APPROVED_APPLIED`
+
+### Required envs
 
 - `GOOGLE_DISCOVERY_SHEET_ID`
-- `GOOGLE_DISCOVERY_SHEET_RANGE` (default `Discovery!A:K`)
+- `GOOGLE_DISCOVERY_SHEET_RANGE` (default `Discovery!A2:Q`)
+- `GOOGLE_PLACES_API_KEY` (or local fallback to `~/.openclaw/openclaw.json` goplaces key)
 
-If discovery sheet env is not set, request still returns success and Telegram notification is sent.
+### Run commands
+
+```bash
+# process new discovery requests and collect candidates
+npm run discovery:run
+
+# approve one candidate and inject to main apply sheet
+npm run discovery:approve -- --request-id rwzd_xxxx --rank 1
+# or by place id
+npm run discovery:approve -- --request-id rwzd_xxxx --place-id ChIJ...
+```
+
+`run-worker.sh` now runs discovery stage automatically every 5 minutes before lead processing.
 
 ---
 
