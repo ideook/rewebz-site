@@ -37,8 +37,8 @@ async function main() {
         requestBody: {
           valueInputOption: 'RAW',
           data: [
-            { range: `시트1!C${i + 1}`, values: [['LIVE']] },
-            { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}live:verified(${code})`]] },
+            { range: `시트1!C${i + 1}`, values: [['OPEN_DONE']] },
+            { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}open:verified(${code})`]] },
           ],
         },
       });
