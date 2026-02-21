@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>오픈클로 테스트 스튜디오 | 신뢰 강화 및 문의 전환</title>
+  <meta name="description" content="한 페이지 안에서 브랜드 신뢰 형성부터 문의 전환까지 연결하는 오픈클로 테스트 스튜디오 원페이지." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="오픈클로 테스트 스튜디오" />
+  <meta property="og:description" content="브랜드 소개, 특징, 상세설명, 문의를 한 흐름으로 연결하는 서울 기반 서비스 페이지." />
+  <meta property="og:url" content="https://example.stage" />
+  <style>
+    :root{
+      --primary:#0f1f45;
+      --secondary:#0f8d84;
+      --accent:#f3a30d;
+      --bg:#f3f7fc;
+      --surface:#ffffff;
+      --line:#d7e1ef;
+      --text:#0d1a33;
+      --muted:#53627c;
+      --ok:#047857;
+      --err:#b91c1c;
+      --radius:18px;
+      --shadow:0 18px 42px rgba(15,31,69,.12);
+      --container:min(1160px,92vw);
+      --h1:clamp(2.1rem,6.8vw,5rem);
+      --h2:clamp(1.45rem,3.3vw,2.45rem);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      font:500 16px/1.62 "Pretendard Variable","SUIT","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      letter-spacing:-.01em;
+      background:
+        radial-gradient(900px 480px at 105% -10%, rgba(15,141,132,.14), transparent 52%),
+        radial-gradient(760px 420px at -10% 8%, rgba(15,31,69,.09), transparent 52%),
+        var(--bg);
+    }
+
+    .container{width:var(--container);margin-inline:auto}
+    .section{padding:84px 0}
+    h1,h2,h3{margin:0}
+    h2{
+      font:900 var(--h2)/1.2 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      letter-spacing:-.03em;
+    }
+    p.lead{margin:14px 0 0;color:var(--muted);max-width:72ch}
+
+    .btn{
+      border:0;border-radius:999px;padding:12px 18px;
+      text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:800;cursor:pointer;transition:.22s ease;
+    }
+    .btn.main{
+      background:linear-gradient(135deg,var(--accent),#dc8f08);
+      color:#231700;
+      box-shadow:0 10px 22px rgba(243,163,13,.34);
+    }
+    .btn.main:hover{transform:translateY(-2px)}
+    .btn.sub{background:#e7eefb;color:var(--primary)}
+    .btn.sub:hover{background:#dbe6f8}
+    .btn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+
+    /* Header */
+    .header{
+      position:sticky;top:0;z-index:60;
+      backdrop-filter:blur(10px);
+      background:rgba(243,247,252,.86);
+      border-bottom:1px solid rgba(215,225,239,.95);
+    }
+    .nav{height:76px;display:flex;align-items:center;justify-content:space-between}
+    .brand{
+      display:flex;align-items:center;gap:10px;text-decoration:none;
+      color:var(--primary);font-weight:900;
+    }
+    .logo{
+      width:34px;aspect-ratio:1;border-radius:10px;
+      background:linear-gradient(145deg,var(--primary),#204082 60%,var(--secondary));
+      box-shadow:0 8px 16px rgba(15,31,69,.24), inset 0 0 0 2px rgba(255,255,255,.58);
+    }
+    .menu{display:flex;align-items:center;gap:18px}
+    .menu a.link{
+      text-decoration:none;color:#33455f;font-weight:700;font-size:.94rem;
+    }
+    .menu a.link:hover{color:var(--primary)}
+
+    /* Hero */
+    #hero{
+      min-height:92vh;
+      display:grid;
+      align-items:center;
+      padding:44px 0 30px;
+    }
+    .hero-wrap{
+      display:grid;
+      grid-template-columns:1.02fr .98fr;
+      gap:20px;
+      align-items:center;
+    }
+    .hero-copy{
+      background:linear-gradient(160deg,#0f1f45,#16306a 62%, #0f8d84);
+      color:#f8fbff;
+      border-radius:26px;
+      padding:32px 28px;
+      box-shadow:0 30px 50px rgba(15,31,69,.34);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-copy::before{
+      content:"";
+      position:absolute;inset:-30%;
+      background:
+        repeating-linear-gradient(125deg, transparent 0 24px, rgba(255,255,255,.06) 24px 25px),
+        radial-gradient(circle at 18% 16%, rgba(243,163,13,.33), transparent 34%);
+      animation:drift 14s linear infinite;
+    }
+    @keyframes drift{to{transform:translateY(-12px) rotate(4deg)}}
+    .hero-copy>*{position:relative}
+    .hero-tag{
+      display:inline-flex;padding:7px 12px;border-radius:999px;
+      background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+      font-size:.82rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    }
+    #intro h1{
+      margin-top:14px;
+      font:900 var(--h1)/.98 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      letter-spacing:-.05em;max-width:10.8ch;
+    }
+    .hero-sub{margin:18px 0 26px;color:#d7e8ff;max-width:46ch}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-actions .btn.sub{
+      background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.25);
+    }
+
+    .hero-visual{
+      background:#fff;border:1px solid var(--line);border-radius:24px;padding:14px;box-shadow:var(--shadow);
+    }
+    .hero-visual img{
+      width:100%;
+      height:min(66vh,560px);
+      object-fit:cover;
+      border-radius:16px;
+      display:block;
+    }
+
+    /* Features */
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    #features .card{transition:.2s ease}
+    #features .card:hover{transform:translateY(-4px)}
+    .icon{
+      width:38px;height:38px;border-radius:12px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:#e9f7f5;color:#0b766e;font-weight:900;margin-bottom:10px;
+    }
+    .card h3{font-size:1.05rem;margin-bottom:8px}
+    .card p{margin:0;color:var(--muted)}
+
+    .proof{
+      margin-top:20px;
+      display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+    }
+    .proof .item{
+      background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;
+    }
+    .proof .n{
+      font:900 clamp(1.5rem,3.2vw,2.2rem)/1 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      color:var(--primary);
+    }
+    .proof .t{margin-top:6px;font-size:.9rem;font-weight:700;color:#51637b}
+
+    /* Details */
+    #details .layout{
+      margin-top:24px;
+      display:grid;grid-template-columns:1.03fr .97fr;gap:14px;
+    }
+    .steps{display:grid;gap:10px}
+    .step{padding:12px 0 12px 14px;border-left:3px solid #bfd4ea}
+    .step .k{font-size:.83rem;font-weight:900;color:var(--secondary)}
+    .step h3{margin:4px 0 4px}
+    .step p{margin:0;color:var(--muted);font-size:.93rem}
+
+    .faq{display:grid;gap:9px}
+    .faq-item{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+    .q{
+      width:100%;border:0;background:none;text-align:left;cursor:pointer;
+      padding:14px 15px;display:flex;justify-content:space-between;gap:10px;
+      color:var(--primary);font-weight:800;
+    }
+    .a{max-height:0;overflow:hidden;transition:max-height .24s ease;padding:0 15px;color:var(--muted)}
+    .faq-item.open .a{max-height:180px;padding:0 15px 13px}
+
+    .notice{
+      margin-top:12px;padding:12px 13px;border-radius:12px;
+      border:1px dashed #bed3e7;background:#f8fbff;color:#4f6178;font-size:.92rem;
+    }
+
+    .mid-cta{
+      margin-top:20px;border-radius:18px;padding:22px;
+      background:linear-gradient(125deg,var(--primary),#22418b 62%,var(--secondary));
+      color:#dbeafe;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+      box-shadow:0 24px 42px rgba(15,31,69,.28);
+    }
+    .mid-cta h3{margin:0 0 6px}
+    .mid-cta p{margin:0;color:#d2e5f8}
+
+    /* Contact */
+    #contact .wrap{
+      margin-top:22px;
+      display:grid;grid-template-columns:1.08fr .92fr;gap:14px;
+    }
+    .form-grid{display:grid;gap:12px}
+    label{font-size:.93rem;color:#1f3148;font-weight:800}
+    input,select,textarea{
+      width:100%;margin-top:6px;padding:12px 13px;border-radius:12px;
+      border:1px solid #c9d6e6;background:#fff;
+      font:500 .97rem/1.4 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+    }
+    input:focus,select:focus,textarea:focus{outline:3px solid #bfdbfe;border-color:#93c5fd}
+    .err{min-height:1.1em;font-size:.84rem;color:var(--err)}
+    .ok{
+      display:none;margin-top:12px;padding:12px 13px;border-radius:12px;
+      border:1px solid #a7f3d0;background:#ecfdf5;color:#065f46;
+    }
+
+    footer{
+      margin-top:64px;border-top:1px solid var(--line);
+      padding:32px 0 44px;color:#607287;
+    }
+    .foot{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px}
+    .foot h4{margin:0 0 8px;color:#334155}
+
+    .mobile-cta{
+      display:none;position:fixed;left:50%;transform:translateX(-50%);
+      bottom:14px;z-index:70;width:min(92vw,460px);
+    }
+    .mobile-cta .btn{width:100%;padding:14px 16px}
+
+    .reveal{opacity:0;transform:translateY(16px);transition:.54s ease}
+    .reveal.show{opacity:1;transform:none}
+
+    @media (max-width:980px){
+      .hero-wrap,.grid-4,.proof,#details .layout,#contact .wrap,.foot,.mid-cta{grid-template-columns:1fr}
+      .section{padding:68px 0}
+      .menu a.link{display:none}
+      #hero{min-height:auto}
+      .mobile-cta{display:block}
+      body{padding-bottom:78px}
+      .hero-visual img{height:42vh}
+    }
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation:none!important;transition:none!important}
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a href="#intro" class="brand" aria-label="상단 이동">
+        <span class="logo" aria-hidden="true"></span>
+        오픈클로 테스트 스튜디오
+      </a>
+      <nav class="menu" aria-label="메뉴">
+        <a class="link" href="#intro">소개</a>
+        <a class="link" href="#features">특징</a>
+        <a class="link" href="#contact">문의</a>
+        <a class="btn main" href="#contact">문의하기</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="hero">
+      <div class="container hero-wrap">
+        <div id="intro" class="hero-copy reveal">
+          <span class="hero-tag">Seoul Service Studio</span>
+          <h1>한 페이지로 신뢰를 만들고, 문의까지 연결합니다.</h1>
+          <p class="hero-sub">
+            오픈클로 테스트 스튜디오는 브랜드 소개, 신뢰 형성, 문의 전환을 하나의 흐름으로 설계합니다.
+            처음 방문한 고객도 빠르게 이해하고 바로 행동할 수 있도록 구성했습니다.
+          </p>
+          <div class="hero-actions">
+            <a href="#contact" class="btn main">지금 문의하기</a>
+            <a href="#features" class="btn sub">특징 먼저 보기</a>
+          </div>
+        </div>
+        <div class="hero-visual reveal">
+          <img
+            src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80"
+            alt="서비스 팀이 고객과 프로젝트 방향을 논의하는 장면"
+            width="1400"
+            height="900"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <h2>특징/장점</h2>
+        <p class="lead">장점 + 근거 + 기대효과를 명확하게 보여 문의 결정을 빠르게 돕습니다.</p>
+        <div class="grid-4" style="margin-top:22px">
+          <article class="card reveal">
+            <div class="icon">01</div>
+            <h3>명확한 소개</h3>
+            <p>첫 화면에서 브랜드가 무엇을 제공하는지 즉시 이해할 수 있습니다.</p>
+          </article>
+          <article class="card reveal">
+            <div class="icon">02</div>
+            <h3>근거 중심 신뢰</h3>
+            <p>절차, 응답 시간, 진행 범위를 구체적으로 제시해 불안을 줄입니다.</p>
+          </article>
+          <article class="card reveal">
+            <div class="icon">03</div>
+            <h3>빠른 커뮤니케이션</h3>
+            <p>평균 2시간 이내 1차 회신으로 문의 후 공백을 최소화합니다.</p>
+          </article>
+          <article class="card reveal">
+            <div class="icon">04</div>
+            <h3>간편한 문의 동선</h3>
+            <p>히어로·중간·하단 CTA 연결로 모바일에서도 빠르게 문의 가능합니다.</p>
+          </article>
+        </div>
+
+        <div class="proof reveal" aria-label="신뢰 보강 블록">
+          <div class="item">
+            <div class="n"><span data-count="42">0</span>%</div>
+            <div class="t">문의 전환율 개선</div>
+          </div>
+          <div class="item">
+            <div class="n"><span data-count="2">0</span>시간</div>
+            <div class="t">평균 초기 응답</div>
+          </div>
+          <div class="item">
+            <div class="n"><span data-count="530">0</span>+</div>
+            <div class="t">누적 진행 건수</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="details">
+      <div class="container">
+        <h2>상세설명</h2>
+        <p class="lead">문의 전 확인이 필요한 프로세스, FAQ, 준비사항을 한 구간에 정리했습니다.</p>
+
+        <div class="layout">
+          <article class="card reveal">
+            <h3 style="margin-bottom:12px">프로세스</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="k">문의</div>
+                <h3>요청 접수</h3>
+                <p>현재 상황과 목표를 확인하고 필요한 정보를 정리합니다.</p>
+              </div>
+              <div class="step">
+                <div class="k">상담</div>
+                <h3>범위·일정 안내</h3>
+                <p>요청에 맞는 진행 범위와 일정을 명확히 제안합니다.</p>
+              </div>
+              <div class="step">
+                <div class="k">실행/안내</div>
+                <h3>진행 및 공유</h3>
+                <p>단계별 결과와 다음 액션을 이해하기 쉽게 전달합니다.</p>
+              </div>
+            </div>
+            <div class="notice">준비사항: 현재 자료(있다면), 목표, 우선순위, 희망 일정</div>
+          </article>
+
+          <article class="card reveal">
+            <h3 style="margin-bottom:12px">FAQ</h3>
+            <div class="faq">
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">비용은 어떻게 산정되나요?<span>＋</span></button>
+                <div class="a"><p>요청 범위와 일정 기준으로 산정하며, 상담 후 상세 견적 범위를 안내드립니다.</p></div>
+              </div>
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">진행 기간은 얼마나 걸리나요?<span>＋</span></button>
+                <div class="a"><p>일반적으로 2~4주입니다. 자료 준비와 검수 일정에 따라 조정될 수 있습니다.</p></div>
+              </div>
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">응답은 언제 받을 수 있나요?<span>＋</span></button>
+                <div class="a"><p>영업시간 기준 평균 2시간 이내 1차 회신을 드립니다.</p></div>
+              </div>
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">진행 방식은 어떻게 되나요?<span>＋</span></button>
+                <div class="a"><p>문의 접수 → 상담 → 확정 → 진행 순서로 운영되며 주요 단계마다 안내합니다.</p></div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="mid-cta reveal">
+          <div>
+            <h3>지금 문의하면 우리 상황에 맞는 초기 제안을 먼저 받아볼 수 있습니다.</h3>
+            <p>핵심 범위와 예상 일정 기준을 빠르게 정리해 안내드립니다.</p>
+          </div>
+          <a href="#contact" class="btn main">빠른 안내 받기</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="container">
+        <h2>문의하기</h2>
+        <p class="lead">필수 정보만 남겨주세요. 평균 2시간 이내 회신과 함께 다음 단계를 안내드립니다.</p>
+
+        <div class="wrap">
+          <article class="card reveal">
+            <form id="leadForm" novalidate>
+              <div class="form-grid">
+                <div>
+                  <label for="name">담당자명 *</label>
+                  <input id="name" name="name" autocomplete="name" required />
+                  <div class="err" data-err="name" aria-live="polite"></div>
+                </div>
+                <div>
+                  <label for="contactInfo">연락처 또는 이메일 *</label>
+                  <input id="contactInfo" name="contactInfo" autocomplete="email" required />
+                  <div class="err" data-err="contactInfo" aria-live="polite"></div>
+                </div>
+                <div>
+                  <label for="type">문의 유형</label>
+                  <select id="type" name="type">
+                    <option value="">선택해주세요</option>
+                    <option>원페이지 신규 제작</option>
+                    <option>기존 페이지 전환 개선</option>
+                    <option>상담 후 결정</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="message">요청 내용 *</label>
+                  <textarea id="message" name="message" rows="4" required placeholder="현재 상황과 목표를 간단히 작성해주세요."></textarea>
+                  <div class="err" data-err="message" aria-live="polite"></div>
+                </div>
+              </div>
+              <button type="submit" class="btn main" style="margin-top:14px">간편 문의 남기기</button>
+              <p id="ok" class="ok">문의가 접수되었습니다. 2시간 이내 1차 회신 후 다음 단계를 안내드립니다.</p>
+            </form>
+          </article>
+
+          <aside class="card reveal" aria-label="문의 후 안내">
+            <h3 style="margin-bottom:10px">문의 후 다음 단계</h3>
+            <ol style="margin:0;padding-left:18px;color:#334155">
+              <li>접수 확인 메시지 발송</li>
+              <li>상담 가능 시간 안내</li>
+              <li>요청 범위 기반 제안 전달</li>
+            </ol>
+            <hr style="border:0;border-top:1px solid var(--line);margin:16px 0" />
+            <p style="margin:0;color:var(--muted)">
+              운영시간: 평일 09:00~18:00 (서울)<br />
+              긴급 요청은 문의 내용에 “긴급” 표기를 남겨주세요.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot">
+      <section>
+        <h4>오픈클로 테스트 스튜디오</h4>
+        <p style="margin:0">브랜드 신뢰 형성과 문의 전환을 한 페이지 안에서 완결하는 서울 기반 서비스 스튜디오.</p>
+      </section>
+      <section>
+        <h4>연락 채널</h4>
+        <p style="margin:0">서울특별시<br />02-0000-0000<br />hello@example.stage</p>
+      </section>
+      <section>
+        <h4>정책</h4>
+        <p style="margin:0">개인정보처리방침<br />이용약관<br />© 2026 오픈클로 테스트 스튜디오</p>
+      </section>
+    </div>
+  </footer>
+
+  <div class="mobile-cta">
+    <a href="#contact" class="btn main">지금 문의하기</a>
+  </div>
+
+  <script>
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); });
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const runCount = (el) => {
+      const target = +el.dataset.count || 0;
+      const start = performance.now(), dur = 850;
+      const tick = (now) => {
+        const p = Math.min((now - start) / dur, 1);
+        el.textContent = Math.floor(target * ease(p));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const cObs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting && !e.target.dataset.done){
+          e.target.dataset.done = "1";
+          runCount(e.target);
+        }
+      });
+    },{threshold:.7});
+    document.querySelectorAll('[data-count]').forEach(el=>cObs.observe(el));
+
+    document.querySelectorAll('.faq-item').forEach(item=>{
+      const btn = item.querySelector('.q');
+      btn.addEventListener('click',()=>{
+        const open = item.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(open));
+        btn.querySelector('span').textContent = open ? '－' : '＋';
+      });
+    });
+
+    const form = document.getElementById('leadForm');
+    const ok = document.getElementById('ok');
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      ok.style.display = 'none';
+      let valid = true;
+
+      ['name','contactInfo','message'].forEach(id=>{
+        const input = document.getElementById(id);
+        const err = document.querySelector(`[data-err="${id}"]`);
+        err.textContent = '';
+        if(!input.value.trim()){
+          err.textContent = '필수 항목을 입력해주세요.';
+          valid = false;
+        }
+      });
+
+      const c = document.getElementById('contactInfo');
+      const cErr = document.querySelector('[data-err="contactInfo"]');
+      if(c.value.trim() && c.value.trim().length < 5){
+        cErr.textContent = '연락 가능한 정보를 정확히 입력해주세요.';
+        valid = false;
+      }
+
+      if(!valid) return;
+      form.reset();
+      ok.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
