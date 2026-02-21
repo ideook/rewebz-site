@@ -1,7 +1,7 @@
 #!/bin/zsh
 set -e
 
-ROOT="/Users/dukhyunlee/.openclaw/workspace/rewebz-site"
+ROOT="/Users/dukhyunlee/.openclaw/workspace-saas-projects/rewebz-site"
 cd "$ROOT"
 mkdir -p logs
 

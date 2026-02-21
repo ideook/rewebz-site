@@ -9,7 +9,7 @@ Create a new repo (example): `rewebz-site`
 ## 2) Push this folder
 
 ```bash
-cd /Users/dukhyunlee/.openclaw/workspace/rewebz-site
+cd /Users/dukhyunlee/.openclaw/workspace-saas-projects/rewebz-site
 git init
 git add .
 git commit -m "init: rewebz landing page"

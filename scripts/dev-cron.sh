@@ -1,6 +1,6 @@
 #!/bin/zsh
 set -e
-cd /Users/dukhyunlee/.openclaw/workspace/rewebz-site
+cd /Users/dukhyunlee/.openclaw/workspace-saas-projects/rewebz-site
 mkdir -p logs
 if [ -f .env.worker ]; then
   set -a
