@@ -19,7 +19,7 @@ if [ -f scripts/lead-worker.js ]; then
 fi
 
 # pipeline steps
-for f in scripts/generate-site.js scripts/qa-site.js scripts/deploy-site.js; do
+for f in scripts/design-plan.js scripts/generate-site.js scripts/qa-site.js scripts/deploy-site.js; do
   if [ ! -f "$f" ]; then
     echo "[$(date '+%F %T %Z')] missing:$f" >> logs/autobuild.log
     continue
