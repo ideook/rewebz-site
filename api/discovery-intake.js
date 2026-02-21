@@ -36,6 +36,26 @@ function parseCategories(body) {
   return raw.split(',').map((x) => x.trim()).filter(Boolean);
 }
 
+const DISCOVERY_HEADERS = [
+  'request_id',
+  'created_at',
+  'stage',
+  'center_lat',
+  'center_lng',
+  'radius_m',
+  'categories',
+  'keyword',
+  'notes',
+  'map_link',
+  'collector',
+];
+
+function discoverySheetNameFromRange(range = '') {
+  const raw = String(range || '').trim();
+  if (!raw.includes('!')) return raw || 'Discovery';
+  return raw.split('!')[0] || 'Discovery';
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -73,7 +93,7 @@ module.exports = async (req, res) => {
     };
 
     const discoverySheetId = process.env.GOOGLE_DISCOVERY_SHEET_ID || '';
-    const discoveryRange = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A:K';
+    const discoveryRange = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:K';
 
     let saved = false;
     if (discoverySheetId && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
@@ -84,9 +104,29 @@ module.exports = async (req, res) => {
       });
 
       const sheets = google.sheets({ version: 'v4', auth: client });
+      const sheetName = discoverySheetNameFromRange(discoveryRange);
+      const headerRange = `${sheetName}!A1:K1`;
+      const appendRange = `${sheetName}!A2:K`;
+
+      // Ensure headers exist (or recover if missing)
+      const head = await sheets.spreadsheets.values.get({
+        spreadsheetId: discoverySheetId,
+        range: headerRange,
+      }).catch(() => ({ data: { values: [] } }));
+
+      const firstCell = String(head?.data?.values?.[0]?.[0] || '').trim().toLowerCase();
+      if (firstCell !== 'request_id') {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: discoverySheetId,
+          range: headerRange,
+          valueInputOption: 'RAW',
+          requestBody: { values: [DISCOVERY_HEADERS] },
+        });
+      }
+
       await sheets.spreadsheets.values.append({
         spreadsheetId: discoverySheetId,
-        range: discoveryRange,
+        range: appendRange,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
