@@ -75,18 +75,23 @@ Share the Google Sheet with the service account email as **Editor**.
 - Engine script: `scripts/discovery-engine.js`
 - Approval script: `scripts/discovery-approve.js`
 
-### Discovery sheet columns (A:Q)
+### Request sheet (Discovery, A:L)
 
-`request_id, created_at, stage, lat, lng, metric_m, category, title, notes, map_link, ref_id, website_url, phone, rating, reviews, score, source`
+`request_id, created_at, stage, center_lat, center_lng, radius_m, categories, keyword, notes, map_link, collector, engine_summary`
 
-- Request row stage: `DISCOVERY_NEW -> DISCOVERY_COLLECTING -> DISCOVERY_DONE`
-- Candidate row stage: `FOUND`
-- Approval stage: `APPROVED_APPLIED`
+### Candidate sheet (DiscoveryCandidates, A:O)
+
+`request_id, collected_at, stage, place_id, title, category, distance_m, rating, reviews, website_url, phone, map_link, score, reason, source`
+
+- Request stage: `DISCOVERY_NEW -> DISCOVERY_COLLECTING -> DISCOVERY_DONE -> DISCOVERY_APPROVED`
+- Candidate stage: `FOUND -> APPROVED_APPLIED`
 
 ### Required envs
 
 - `GOOGLE_DISCOVERY_SHEET_ID`
-- `GOOGLE_DISCOVERY_SHEET_RANGE` (default `Discovery!A2:Q`)
+- `GOOGLE_DISCOVERY_SHEET_RANGE` (default `Discovery!A2:L`)
+- `GOOGLE_DISCOVERY_CANDIDATE_SHEET_ID` (optional, default same spreadsheet)
+- `GOOGLE_DISCOVERY_CANDIDATE_SHEET_RANGE` (default `DiscoveryCandidates!A2:O`)
 - `GOOGLE_PLACES_API_KEY` (or local fallback to `~/.openclaw/openclaw.json` goplaces key)
 
 ### Run commands
@@ -101,7 +106,7 @@ npm run discovery:approve -- --request-id rwzd_xxxx --rank 1
 npm run discovery:approve -- --request-id rwzd_xxxx --place-id ChIJ...
 ```
 
-`run-worker.sh` now runs discovery stage automatically every 5 minutes before lead processing.
+`run-worker.sh` runs discovery stage automatically every 5 minutes before lead processing.
 
 ---
 

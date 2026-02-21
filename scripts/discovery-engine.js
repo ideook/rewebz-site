@@ -3,8 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 
-const DISCOVERY_SHEET_ID = process.env.GOOGLE_DISCOVERY_SHEET_ID || '';
-const DISCOVERY_SHEET_RANGE = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:Q';
+const REQUEST_SHEET_ID = process.env.GOOGLE_DISCOVERY_SHEET_ID || '';
+const REQUEST_SHEET_RANGE = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:L';
+
+const CANDIDATE_SHEET_ID = process.env.GOOGLE_DISCOVERY_CANDIDATE_SHEET_ID || REQUEST_SHEET_ID;
+const CANDIDATE_SHEET_RANGE = process.env.GOOGLE_DISCOVERY_CANDIDATE_SHEET_RANGE || 'DiscoveryCandidates!A2:O';
+
 const SA_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
 const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 
@@ -15,9 +19,37 @@ const MAX_REQUESTS = Number(process.env.DISCOVERY_ENGINE_MAX_PER_RUN || 1) || 1;
 const MAX_CANDIDATES_PER_REQUEST = Number(process.env.DISCOVERY_MAX_CANDIDATES_PER_REQUEST || 12) || 12;
 const MIN_SCORE = Number(process.env.DISCOVERY_MIN_SCORE || 0) || 0;
 
-const HEADERS = [
-  'request_id', 'created_at', 'stage', 'lat', 'lng', 'metric_m', 'category', 'title', 'notes', 'map_link',
-  'ref_id', 'website_url', 'phone', 'rating', 'reviews', 'score', 'source',
+const REQUEST_HEADERS = [
+  'request_id',
+  'created_at',
+  'stage',
+  'center_lat',
+  'center_lng',
+  'radius_m',
+  'categories',
+  'keyword',
+  'notes',
+  'map_link',
+  'collector',
+  'engine_summary',
+];
+
+const CANDIDATE_HEADERS = [
+  'request_id',
+  'collected_at',
+  'stage',
+  'place_id',
+  'title',
+  'category',
+  'distance_m',
+  'rating',
+  'reviews',
+  'website_url',
+  'phone',
+  'map_link',
+  'score',
+  'reason',
+  'source',
 ];
 
 const CATEGORY_TYPE_MAP = {
@@ -46,10 +78,10 @@ function parseArgs(argv) {
   };
 }
 
-function discoverySheetName(range = '') {
+function sheetName(range = '', fallback = 'Sheet1') {
   const raw = String(range || '').trim();
-  if (!raw.includes('!')) return raw || 'Discovery';
-  return raw.split('!')[0] || 'Discovery';
+  if (!raw.includes('!')) return raw || fallback;
+  return raw.split('!')[0] || fallback;
 }
 
 function sleep(ms) {
@@ -78,7 +110,6 @@ function haversineM(lat1, lng1, lat2, lng2) {
 
 function getPlacesApiKey() {
   if (process.env.GOOGLE_PLACES_API_KEY) return process.env.GOOGLE_PLACES_API_KEY;
-
   try {
     const cfgPath = path.resolve(process.env.HOME || '~', '.openclaw', 'openclaw.json');
     const raw = fs.readFileSync(cfgPath, 'utf8');
@@ -95,10 +126,7 @@ function unique(arr) {
 
 function mapTypesFromCategories(categories) {
   const types = [];
-  for (const c of categories) {
-    const mapped = CATEGORY_TYPE_MAP[c] || [];
-    types.push(...mapped);
-  }
+  for (const c of categories) types.push(...(CATEGORY_TYPE_MAP[c] || []));
   return unique(types);
 }
 
@@ -131,18 +159,13 @@ function calcScore(place) {
     reasons.push('전화정보 부족');
   }
 
-  if (rating > 0 && rating < 4.0) {
-    score += 8;
-  }
+  if (rating > 0 && rating < 4.0) score += 8;
+  if (rating >= 4.4 && reviews >= 200 && website) score -= 12;
 
-  if (rating >= 4.4 && reviews >= 200 && website) {
-    score -= 12;
-  }
-
-  return { score, reasons: reasons.join(', ') };
+  return { score, reason: reasons.join(', ') };
 }
 
-async function placesSearchNearby(apiKey, type, center, radius, keyword = '') {
+async function placesSearchNearby(apiKey, type, center, radius) {
   const body = {
     includedTypes: [type],
     maxResultCount: 20,
@@ -155,8 +178,6 @@ async function placesSearchNearby(apiKey, type, center, radius, keyword = '') {
     languageCode: 'ko',
     regionCode: 'KR',
   };
-
-  if (keyword) body.rankPreference = 'DISTANCE';
 
   const r = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
     method: 'POST',
@@ -194,87 +215,86 @@ async function sendTelegram(text) {
     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text,
-        disable_web_page_preview: true,
-      }),
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, disable_web_page_preview: true }),
     });
   } catch (_) {}
 }
 
+async function ensureSheetAndHeader(sheets, spreadsheetId, name, headerRange, headers) {
+  const meta = await sheets.spreadsheets.get({ spreadsheetId, fields: 'sheets.properties.title' });
+  const hasSheet = (meta.data.sheets || []).some((s) => s.properties?.title === name);
+  if (!hasSheet) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: { requests: [{ addSheet: { properties: { title: name } } }] },
+    });
+  }
+
+  const head = await sheets.spreadsheets.values.get({ spreadsheetId, range: headerRange }).catch(() => ({ data: { values: [] } }));
+  const first = String(head?.data?.values?.[0]?.[0] || '').trim().toLowerCase();
+  const size = head?.data?.values?.[0]?.length || 0;
+  if (first !== String(headers[0]).toLowerCase() || size < headers.length) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: headerRange,
+      valueInputOption: 'RAW',
+      requestBody: { values: [headers] },
+    });
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!DISCOVERY_SHEET_ID || !SA_EMAIL || !SA_KEY) {
-    throw new Error('Missing discovery sheet envs (GOOGLE_DISCOVERY_SHEET_ID / GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY)');
+  if (!REQUEST_SHEET_ID || !SA_EMAIL || !SA_KEY) {
+    throw new Error('Missing discovery request sheet envs');
   }
 
   const placesApiKey = getPlacesApiKey();
-  if (!placesApiKey) {
-    throw new Error('Missing GOOGLE_PLACES_API_KEY (env) and no fallback goplaces key found');
-  }
+  if (!placesApiKey) throw new Error('Missing GOOGLE_PLACES_API_KEY');
 
   const auth = new google.auth.JWT({
     email: SA_EMAIL,
     key: SA_KEY,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
-
   const sheets = google.sheets({ version: 'v4', auth });
-  const sheetName = discoverySheetName(DISCOVERY_SHEET_RANGE);
-  const wholeRange = `${sheetName}!A:Q`;
 
-  // Ensure header
-  const headRes = await sheets.spreadsheets.values.get({ spreadsheetId: DISCOVERY_SHEET_ID, range: `${sheetName}!A1:Q1` }).catch(() => ({ data: { values: [] } }));
-  const firstCell = String(headRes?.data?.values?.[0]?.[0] || '').trim().toLowerCase();
-  if (firstCell !== 'request_id') {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: DISCOVERY_SHEET_ID,
-      range: `${sheetName}!A1:Q1`,
-      valueInputOption: 'RAW',
-      requestBody: { values: [HEADERS] },
-    });
-  }
+  const reqSheet = sheetName(REQUEST_SHEET_RANGE, 'Discovery');
+  const candSheet = sheetName(CANDIDATE_SHEET_RANGE, 'DiscoveryCandidates');
 
-  const res = await sheets.spreadsheets.values.get({ spreadsheetId: DISCOVERY_SHEET_ID, range: wholeRange });
-  const rows = res.data.values || [];
+  await ensureSheetAndHeader(sheets, REQUEST_SHEET_ID, reqSheet, `${reqSheet}!A1:L1`, REQUEST_HEADERS);
+  await ensureSheetAndHeader(sheets, CANDIDATE_SHEET_ID, candSheet, `${candSheet}!A1:O1`, CANDIDATE_HEADERS);
 
-  const requestRows = [];
-  for (let i = 1; i < rows.length; i++) {
-    const r = rows[i] || [];
+  const reqRes = await sheets.spreadsheets.values.get({ spreadsheetId: REQUEST_SHEET_ID, range: `${reqSheet}!A:L` });
+  const reqRows = reqRes.data.values || [];
+
+  const targets = [];
+  for (let i = 1; i < reqRows.length; i++) {
+    const r = reqRows[i] || [];
     const requestId = String(r[0] || '').trim();
     const stage = String(r[2] || '').trim();
-    const source = String(r[16] || '').trim();
-
-    if (args.requestId && requestId !== args.requestId) continue;
     if (!requestId.startsWith('rwzd_')) continue;
+    if (args.requestId && requestId !== args.requestId) continue;
     if (!['DISCOVERY_NEW', 'DISCOVERY_RETRY'].includes(stage)) continue;
-    if (source && source !== 'intake') continue;
-
-    requestRows.push({ rowNum: i + 1, row: r });
+    targets.push({ rowNum: i + 1, row: r });
   }
 
-  const targets = requestRows.slice(0, Math.max(1, MAX_REQUESTS));
   let processed = 0;
 
-  for (const target of targets) {
-    const r = target.row;
-    const rowNum = target.rowNum;
+  for (const t of targets.slice(0, Math.max(1, MAX_REQUESTS))) {
+    const r = t.row;
+    const rowNum = t.rowNum;
 
     const requestId = String(r[0] || '').trim();
-    const center = {
-      lat: toNum(r[3], NaN),
-      lng: toNum(r[4], NaN),
-    };
+    const center = { lat: toNum(r[3], NaN), lng: toNum(r[4], NaN) };
     const radius = Math.max(300, Math.min(10000, toNum(r[5], 2000)));
     const categories = parseCategories(r[6]);
-    const keyword = String(r[7] || '').trim();
     const reqNotes = String(r[8] || '').trim();
 
     if (!Number.isFinite(center.lat) || !Number.isFinite(center.lng)) {
       await sheets.spreadsheets.values.update({
-        spreadsheetId: DISCOVERY_SHEET_ID,
-        range: `${sheetName}!C${rowNum}`,
+        spreadsheetId: REQUEST_SHEET_ID,
+        range: `${reqSheet}!C${rowNum}`,
         valueInputOption: 'RAW',
         requestBody: { values: [['DISCOVERY_ERROR']] },
       });
@@ -282,46 +302,53 @@ async function main() {
     }
 
     await sheets.spreadsheets.values.update({
-      spreadsheetId: DISCOVERY_SHEET_ID,
-      range: `${sheetName}!C${rowNum}`,
+      spreadsheetId: REQUEST_SHEET_ID,
+      range: `${reqSheet}!C${rowNum}`,
       valueInputOption: 'RAW',
       requestBody: { values: [['DISCOVERY_COLLECTING']] },
     });
 
-    const types = mapTypesFromCategories(categories);
-    const existingPlaceIds = new Set(
-      rows
-        .filter((x, idx) => idx > 0 && String(x?.[0] || '').trim() === requestId)
-        .map((x) => String(x?.[10] || '').trim())
+    const candRes = await sheets.spreadsheets.values.get({ spreadsheetId: CANDIDATE_SHEET_ID, range: `${candSheet}!A:O` });
+    const candRows = candRes.data.values || [];
+    const existingIds = new Set(
+      candRows
+        .filter((x, i) => i > 0 && String(x?.[0] || '').trim() === requestId)
+        .map((x) => String(x?.[3] || '').trim())
         .filter(Boolean),
     );
 
     const all = [];
+    const types = mapTypesFromCategories(categories);
+
     for (const type of types) {
       try {
-        const found = await placesSearchNearby(placesApiKey, type, center, radius, keyword);
+        const found = await placesSearchNearby(placesApiKey, type, center, radius);
         for (const p of found) {
-          if (!p?.id) continue;
-          if (existingPlaceIds.has(p.id)) continue;
-          const d = haversineM(center.lat, center.lng, Number(p.location?.latitude || center.lat), Number(p.location?.longitude || center.lng));
+          if (!p?.id || existingIds.has(p.id)) continue;
+
+          const distance = haversineM(
+            center.lat,
+            center.lng,
+            Number(p.location?.latitude || center.lat),
+            Number(p.location?.longitude || center.lng),
+          );
           const scored = calcScore(p);
+
           all.push({
-            requestId,
-            created_at: new Date().toISOString(),
+            request_id: requestId,
+            collected_at: new Date().toISOString(),
             stage: 'FOUND',
-            lat: Number(p.location?.latitude || center.lat),
-            lng: Number(p.location?.longitude || center.lng),
-            metric_m: d,
-            category: p.primaryType || type,
+            place_id: p.id,
             title: p.displayName?.text || '(이름없음)',
-            notes: scored.reasons,
-            map_link: p.googleMapsUri || `https://maps.google.com/?q=${p.location?.latitude || center.lat},${p.location?.longitude || center.lng}`,
-            ref_id: p.id,
-            website_url: p.websiteUri || '',
-            phone: p.nationalPhoneNumber || '',
+            category: p.primaryType || type,
+            distance_m: distance,
             rating: p.rating ?? '',
             reviews: p.userRatingCount ?? '',
+            website_url: p.websiteUri || '',
+            phone: p.nationalPhoneNumber || '',
+            map_link: p.googleMapsUri || `https://maps.google.com/?q=${p.location?.latitude || center.lat},${p.location?.longitude || center.lng}`,
             score: scored.score,
+            reason: scored.reason,
             source: 'places-api-v1',
           });
         }
@@ -331,45 +358,39 @@ async function main() {
       await sleep(250);
     }
 
-    // dedupe within this run
     const dedup = new Map();
-    for (const x of all) {
-      if (!dedup.has(x.ref_id)) dedup.set(x.ref_id, x);
-      else {
-        const prev = dedup.get(x.ref_id);
-        if ((x.score || 0) > (prev.score || 0)) dedup.set(x.ref_id, x);
-      }
+    for (const c of all) {
+      if (!dedup.has(c.place_id)) dedup.set(c.place_id, c);
+      else if ((c.score || 0) > (dedup.get(c.place_id).score || 0)) dedup.set(c.place_id, c);
     }
 
     const candidates = [...dedup.values()]
       .filter((x) => Number(x.score || 0) >= MIN_SCORE)
-      .sort((a, b) => (Number(b.score || 0) - Number(a.score || 0)) || (Number(a.metric_m || 0) - Number(b.metric_m || 0)))
+      .sort((a, b) => (Number(b.score || 0) - Number(a.score || 0)) || (Number(a.distance_m || 0) - Number(b.distance_m || 0)))
       .slice(0, Math.max(1, MAX_CANDIDATES_PER_REQUEST));
 
     if (candidates.length) {
       await sheets.spreadsheets.values.append({
-        spreadsheetId: DISCOVERY_SHEET_ID,
-        range: `${sheetName}!A2:Q`,
+        spreadsheetId: CANDIDATE_SHEET_ID,
+        range: `${candSheet}!A2:O`,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
           values: candidates.map((c) => [
-            c.requestId,
-            c.created_at,
+            c.request_id,
+            c.collected_at,
             c.stage,
-            c.lat,
-            c.lng,
-            c.metric_m,
-            c.category,
+            c.place_id,
             c.title,
-            c.notes,
-            c.map_link,
-            c.ref_id,
-            c.website_url,
-            c.phone,
+            c.category,
+            c.distance_m,
             c.rating,
             c.reviews,
+            c.website_url,
+            c.phone,
+            c.map_link,
             c.score,
+            c.reason,
             c.source,
           ]),
         },
@@ -377,22 +398,21 @@ async function main() {
     }
 
     await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: DISCOVERY_SHEET_ID,
+      spreadsheetId: REQUEST_SHEET_ID,
       requestBody: {
         valueInputOption: 'RAW',
         data: [
-          { range: `${sheetName}!C${rowNum}`, values: [['DISCOVERY_DONE']] },
-          { range: `${sheetName}!I${rowNum}`, values: [[`${reqNotes ? reqNotes + ' | ' : ''}engine:done(found:${candidates.length},types:${types.length})`]] },
+          { range: `${reqSheet}!C${rowNum}`, values: [['DISCOVERY_DONE']] },
+          { range: `${reqSheet}!L${rowNum}`, values: [[`${reqNotes ? reqNotes + ' | ' : ''}engine:done(found:${candidates.length},types:${types.length})`]] },
         ],
       },
     });
 
-    const top = candidates.slice(0, 5).map((c, i) => `${i + 1}) ${c.title} | score:${c.score} | 리뷰:${c.reviews || 0} | ${c.metric_m}m`).join('\n');
+    const top = candidates.slice(0, 5).map((c, i) => `${i + 1}) ${c.title} | score:${c.score} | 리뷰:${c.reviews || 0} | ${c.distance_m}m`).join('\n');
     await sendTelegram([
       '🔎 rewebz 업체 조사 완료',
       `- request: ${requestId}`,
       `- 후보 수: ${candidates.length}`,
-      `- 좌표: ${center.lat.toFixed(6)}, ${center.lng.toFixed(6)} (r=${radius}m)`,
       top ? `- 상위 후보\n${top}` : '- 후보 없음',
       `- 다음: 승인 시 '승인 ${requestId} <순번>' 또는 place_id로 전달`,
     ].join('\n'));

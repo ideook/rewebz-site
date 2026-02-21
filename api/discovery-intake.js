@@ -1,23 +1,18 @@
 const { google } = require('googleapis');
 
-const DISCOVERY_HEADERS = [
-  'request_id',      // A
-  'created_at',      // B
-  'stage',           // C
-  'lat',             // D
-  'lng',             // E
-  'metric_m',        // F (radius for request, distance for candidate)
-  'category',        // G
-  'title',           // H
-  'notes',           // I
-  'map_link',        // J
-  'ref_id',          // K (place id or internal ref)
-  'website_url',     // L
-  'phone',           // M
-  'rating',          // N
-  'reviews',         // O
-  'score',           // P
-  'source',          // Q
+const REQUEST_HEADERS = [
+  'request_id',
+  'created_at',
+  'stage',
+  'center_lat',
+  'center_lng',
+  'radius_m',
+  'categories',
+  'keyword',
+  'notes',
+  'map_link',
+  'collector',
+  'engine_summary',
 ];
 
 function pick(obj, key) {
@@ -38,10 +33,43 @@ function parseCategories(body) {
   return raw.split(',').map((x) => x.trim()).filter(Boolean);
 }
 
-function discoverySheetNameFromRange(range = '') {
+function sheetNameFromRange(range = '', fallback = 'Discovery') {
   const raw = String(range || '').trim();
-  if (!raw.includes('!')) return raw || 'Discovery';
-  return raw.split('!')[0] || 'Discovery';
+  if (!raw.includes('!')) return raw || fallback;
+  return raw.split('!')[0] || fallback;
+}
+
+async function ensureSheetAndHeader(sheets, spreadsheetId, sheetName, headerRange, headers) {
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: 'sheets.properties.title',
+  });
+
+  const hasSheet = (meta.data.sheets || []).some((s) => s.properties?.title === sheetName);
+  if (!hasSheet) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{ addSheet: { properties: { title: sheetName } } }],
+      },
+    });
+  }
+
+  const head = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: headerRange,
+  }).catch(() => ({ data: { values: [] } }));
+
+  const firstCell = String(head?.data?.values?.[0]?.[0] || '').trim().toLowerCase();
+  const size = head?.data?.values?.[0]?.length || 0;
+  if (firstCell !== String(headers[0]).toLowerCase() || size < headers.length) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: headerRange,
+      valueInputOption: 'RAW',
+      requestBody: { values: [headers] },
+    });
+  }
 }
 
 async function sendTelegram(text) {
@@ -98,11 +126,11 @@ module.exports = async (req, res) => {
       map_link: pick(body, 'map_link') || `https://maps.google.com/?q=${center_lat},${center_lng}`,
     };
 
-    const discoverySheetId = process.env.GOOGLE_DISCOVERY_SHEET_ID || '';
-    const discoveryRange = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:Q';
+    const requestSheetId = process.env.GOOGLE_DISCOVERY_SHEET_ID || '';
+    const requestRange = process.env.GOOGLE_DISCOVERY_SHEET_RANGE || 'Discovery!A2:L';
 
     let saved = false;
-    if (discoverySheetId && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+    if (requestSheetId && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
       const client = new google.auth.JWT({
         email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
         key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
@@ -110,28 +138,14 @@ module.exports = async (req, res) => {
       });
 
       const sheets = google.sheets({ version: 'v4', auth: client });
-      const sheetName = discoverySheetNameFromRange(discoveryRange);
-      const headerRange = `${sheetName}!A1:Q1`;
-      const appendRange = `${sheetName}!A2:Q`;
+      const sheetName = sheetNameFromRange(requestRange, 'Discovery');
+      const headerRange = `${sheetName}!A1:L1`;
+      const appendRange = `${sheetName}!A2:L`;
 
-      const head = await sheets.spreadsheets.values.get({
-        spreadsheetId: discoverySheetId,
-        range: headerRange,
-      }).catch(() => ({ data: { values: [] } }));
-
-      const firstCell = String(head?.data?.values?.[0]?.[0] || '').trim().toLowerCase();
-      const headerSize = head?.data?.values?.[0]?.length || 0;
-      if (firstCell !== 'request_id' || headerSize < DISCOVERY_HEADERS.length) {
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: discoverySheetId,
-          range: headerRange,
-          valueInputOption: 'RAW',
-          requestBody: { values: [DISCOVERY_HEADERS] },
-        });
-      }
+      await ensureSheetAndHeader(sheets, requestSheetId, sheetName, headerRange, REQUEST_HEADERS);
 
       await sheets.spreadsheets.values.append({
-        spreadsheetId: discoverySheetId,
+        spreadsheetId: requestSheetId,
         range: appendRange,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
@@ -147,13 +161,8 @@ module.exports = async (req, res) => {
             payload.keyword || '(request)',
             payload.notes,
             payload.map_link,
-            '', // ref_id
-            '', // website_url
-            '', // phone
-            '', // rating
-            '', // reviews
-            '', // score
-            'intake',
+            '',
+            '',
           ]],
         },
       });
