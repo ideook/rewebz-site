@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta name="rewebz-build-marker" content="rwz-live-v2:lead-ej83" data-rwz-hidden="1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>리웹즈 와일드카드 전환 점검 | 신뢰형 원페이지</title>
+  <meta name="description" content="서울 기반 서비스 브랜드의 신뢰 형성과 문의 전환을 한 페이지에서 완결하는 리웹즈 와일드카드 전환 점검 랜딩페이지." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="리웹즈 와일드카드 전환 점검" />
+  <meta property="og:description" content="대형 히어로, 특징/장점, 상세설명, 문의 폼으로 구성된 전환형 원페이지." />
+  <meta property="og:url" content="https://example.net" />
+  <style>
+    :root{
+      --primary:#0f1f45;
+      --secondary:#0b8a83;
+      --accent:#f3a10d;
+      --accent-deep:#d88707;
+
+      --bg:#f3f6fb;
+      --surface:#ffffff;
+      --text:#0c1932;
+      --muted:#53627b;
+      --line:#d6deeb;
+
+      --ok:#047857;
+      --danger:#b91c1c;
+
+      --radius:18px;
+      --shadow:0 20px 44px rgba(15,31,69,.12);
+      --container:min(1180px,92vw);
+      --h1:clamp(2.2rem,7vw,5.2rem);
+      --h2:clamp(1.45rem,3.2vw,2.4rem);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      font:500 16px/1.64 "Pretendard Variable","SUIT","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      letter-spacing:-.01em;
+      background:
+        radial-gradient(900px 480px at 102% -10%, rgba(11,138,131,.14), transparent 52%),
+        radial-gradient(760px 420px at -8% 8%, rgba(15,31,69,.09), transparent 52%),
+        var(--bg);
+    }
+
+    .container{width:var(--container);margin-inline:auto}
+    .section{padding:86px 0}
+    h1,h2,h3{margin:0}
+    h2{
+      font:900 var(--h2)/1.2 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      letter-spacing:-.03em;
+    }
+    p.lead{margin:14px 0 0;color:var(--muted);max-width:74ch}
+
+    .btn{
+      border:0;
+      border-radius:999px;
+      min-height:44px;
+      padding:12px 18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      font-weight:800;
+      cursor:pointer;
+      transition:.22s ease;
+      white-space:nowrap;
+    }
+    .btn.main{
+      background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+      color:#2a1d00;
+      box-shadow:0 10px 22px rgba(243,161,13,.34);
+    }
+    .btn.main:hover{transform:translateY(-2px)}
+    .btn.sub{background:#e7eefb;color:var(--primary)}
+    .btn.sub:hover{background:#dce6f8}
+    .btn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+
+    /* Header */
+    .header{
+      position:sticky;
+      top:0;
+      z-index:60;
+      backdrop-filter:blur(10px);
+      background:rgba(243,246,251,.86);
+      border-bottom:1px solid rgba(214,222,235,.96);
+    }
+    .nav{
+      height:76px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      color:var(--primary);
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .logo{
+      width:34px;
+      aspect-ratio:1;
+      border-radius:10px;
+      background:linear-gradient(145deg,var(--primary),#214186 60%,var(--secondary));
+      box-shadow:0 8px 16px rgba(15,31,69,.24), inset 0 0 0 2px rgba(255,255,255,.58);
+    }
+    .menu{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .menu a.link{
+      text-decoration:none;
+      color:#33465f;
+      font-size:.94rem;
+      font-weight:700;
+    }
+    .menu a.link:hover{color:var(--primary)}
+
+    /* Hero */
+    #hero{
+      min-height:92vh;
+      display:grid;
+      align-items:center;
+      padding:44px 0 30px;
+      position:relative;
+      overflow:hidden;
+    }
+    #hero::before{
+      content:"";
+      position:absolute;
+      left:-14%;
+      right:-14%;
+      top:-24%;
+      height:66%;
+      background:linear-gradient(120deg, rgba(15,31,69,.94), rgba(23,67,133,.79) 52%, rgba(11,138,131,.78));
+      clip-path:polygon(0 0,100% 0,100% 56%,0 88%);
+      z-index:-1;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:20px;
+      align-items:end;
+    }
+    .hero-copy{
+      color:#f8fbff;
+      padding:8px 4px 4px;
+    }
+    .hero-chip{
+      display:inline-flex;
+      padding:7px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.28);
+      background:rgba(255,255,255,.16);
+      font-size:.82rem;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    #intro h1{
+      margin-top:14px;
+      font:900 var(--h1)/.98 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      letter-spacing:-.05em;
+      max-width:11ch;
+    }
+    .hero-sub{
+      margin:18px 0 26px;
+      color:#d8e9ff;
+      max-width:47ch;
+    }
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-actions .btn.sub{
+      background:rgba(255,255,255,.2);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.25);
+    }
+
+    .hero-media{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+    .hero-media img{
+      width:100%;
+      height:min(66vh,580px);
+      object-fit:cover;
+      border-radius:16px;
+      display:block;
+    }
+
+    /* Features */
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+    .card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    #features .card{transition:.22s ease}
+    #features .card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 24px 44px rgba(15,31,69,.15);
+    }
+    .icon{
+      width:38px;height:38px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#e9f7f5;
+      color:#0b766e;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+    .card h3{
+      font-size:1.06rem;
+      margin-bottom:8px;
+    }
+    .card p{margin:0;color:var(--muted)}
+
+    .trust-block{
+      margin-top:20px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+    .trust-item{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .trust-item::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      top:-18px;
+      width:74px;height:74px;
+      border-radius:18px;
+      transform:rotate(16deg);
+      background:linear-gradient(140deg, rgba(11,138,131,.18), rgba(243,161,13,.16));
+    }
+    .trust-item .n{
+      position:relative;
+      font:900 clamp(1.5rem,3.2vw,2.25rem)/1 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      color:var(--primary);
+    }
+    .trust-item .t{
+      position:relative;
+      margin-top:6px;
+      font-size:.9rem;
+      color:#51637b;
+      font-weight:700;
+    }
+
+    /* Details */
+    #details .layout{
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:1.03fr .97fr;
+      gap:14px;
+    }
+    .steps{display:grid;gap:10px}
+    .step{
+      padding:12px 0 12px 14px;
+      border-left:3px solid #bfd4ea;
+    }
+    .step .k{
+      font-size:.83rem;
+      font-weight:900;
+      color:var(--secondary);
+    }
+    .step h3{margin:4px 0 4px}
+    .step p{
+      margin:0;
+      color:var(--muted);
+      font-size:.93rem;
+    }
+
+    .faq{display:grid;gap:9px}
+    .faq-item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .q{
+      width:100%;
+      border:0;
+      background:none;
+      text-align:left;
+      cursor:pointer;
+      padding:14px 15px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--primary);
+      font-weight:800;
+    }
+    .a{
+      max-height:0;
+      overflow:hidden;
+      transition:max-height .24s ease;
+      padding:0 15px;
+      color:var(--muted);
+    }
+    .faq-item.open .a{
+      max-height:200px;
+      padding:0 15px 13px;
+    }
+
+    .notice{
+      margin-top:12px;
+      padding:12px 13px;
+      border-radius:12px;
+      border:1px dashed #bed3e7;
+      background:#f8fbff;
+      color:#4f6178;
+      font-size:.92rem;
+    }
+
+    .mid-cta{
+      margin-top:20px;
+      border-radius:18px;
+      padding:22px;
+      background:linear-gradient(125deg,var(--primary),#22438a 62%,var(--secondary));
+      color:#dbeafe;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:12px;
+      align-items:center;
+      box-shadow:0 24px 42px rgba(15,31,69,.28);
+    }
+    .mid-cta h3{
+      margin:0 0 6px;
+      font-size:clamp(1.15rem,2.4vw,1.46rem);
+    }
+    .mid-cta p{
+      margin:0;
+      color:#d2e5f8;
+    }
+
+    /* Contact */
+    #contact .wrap{
+      margin-top:22px;
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:14px;
+    }
+    .form-grid{display:grid;gap:12px}
+    label{
+      font-size:.93rem;
+      color:#1f3148;
+      font-weight:800;
+    }
+    input,select,textarea{
+      width:100%;
+      margin-top:6px;
+      padding:12px 13px;
+      border-radius:12px;
+      border:1px solid #c9d6e6;
+      background:#fff;
+      font:500 .97rem/1.4 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+    }
+    input:focus,select:focus,textarea:focus{
+      outline:3px solid #bfdbfe;
+      border-color:#93c5fd;
+    }
+    .err{
+      min-height:1.1em;
+      font-size:.84rem;
+      color:var(--danger);
+    }
+    .ok{
+      display:none;
+      margin-top:12px;
+      padding:12px 13px;
+      border-radius:12px;
+      border:1px solid #a7f3d0;
+      background:#ecfdf5;
+      color:#065f46;
+    }
+
+    footer{
+      margin-top:64px;
+      border-top:1px solid var(--line);
+      padding:32px 0 44px;
+      color:#607287;
+    }
+    .foot{
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr;
+      gap:14px;
+    }
+    .foot h4{
+      margin:0 0 8px;
+      color:#334155;
+    }
+
+    .mobile-cta{
+      display:none;
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:14px;
+      z-index:70;
+      width:min(92vw,460px);
+    }
+    .mobile-cta .btn{
+      width:100%;
+      padding:14px 16px;
+    }
+
+    .reveal{
+      opacity:0;
+      transform:translateY(16px);
+      transition:.54s ease;
+    }
+    .reveal.show{
+      opacity:1;
+      transform:none;
+    }
+
+    @media (max-width:980px){
+      .hero-grid,.grid-4,.trust-block,#details .layout,#contact .wrap,.foot,.mid-cta{
+        grid-template-columns:1fr;
+      }
+      .section{padding:68px 0}
+      .menu a.link{display:none}
+      #hero{min-height:auto}
+      .hero-media img{height:42vh}
+      .mobile-cta{display:block}
+      body{padding-bottom:78px}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        animation:none!important;
+        transition:none!important;
+      }
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a href="#intro" class="brand" aria-label="상단으로 이동">
+        <span class="logo" aria-hidden="true"></span>
+        리웹즈 와일드카드 전환 점검
+      </a>
+      <nav class="menu" aria-label="메뉴">
+        <a class="link" href="#intro">소개</a>
+        <a class="link" href="#features">특징</a>
+        <a class="link" href="#contact">문의</a>
+        <a class="btn main" href="#contact">문의하기</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="hero">
+      <div class="container hero-grid">
+        <div id="intro" class="hero-copy reveal">
+          <span class="hero-chip">Rewebs Wildcard Conversion Check</span>
+          <h1>브랜드 신뢰와 문의 전환을 동시에 설계합니다.</h1>
+          <p class="hero-sub">
+            이 페이지는 브랜드 소개부터 문의 행동까지 한 흐름으로 연결되도록 구성되었습니다.
+            신규 방문자와 비교 검토 사용자 모두가 빠르게 판단할 수 있도록 핵심 정보만 명확히 배치했습니다.
+          </p>
+          <div class="hero-actions">
+            <a class="btn main" href="#contact">지금 문의하기</a>
+            <a class="btn sub" href="#features">특징 확인하기</a>
+          </div>
+        </div>
+
+        <div class="hero-media reveal">
+          <img
+            src="https://images.unsplash.com/photo-1552664730-6a0f9d6156a3?auto=format&fit=crop&w=1600&q=80&fm=webp"
+            alt="팀이 프로젝트 전환 전략을 검토하는 회의 장면"
+            width="1600"
+            height="1000"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <h2>특징/장점</h2>
+        <p class="lead">장점과 근거, 기대효과를 카드로 정리해 의사결정을 빠르게 돕습니다.</p>
+
+        <div class="grid-4" style="margin-top:22px">
+          <article class="card reveal">
+            <div class="icon">01</div>
+            <h3>명확한 첫 인지</h3>
+            <p>첫 화면에서 서비스 목적과 제공 가치를 즉시 이해할 수 있습니다.</p>
+          </article>
+          <article class="card reveal">
+            <div class="icon">02</div>
+            <h3>근거 중심 신뢰성</h3>
+            <p>절차, 응답 기준, 진행 범위를 구체적으로 제시해 불확실성을 줄입니다.</p>
+          </article>
+          <article class="card reveal">
+            <div class="icon">03</div>
+            <h3>전환형 CTA 배치</h3>
+            <p>히어로·중단·문의 구간에서 자연스럽게 CTA를 반복 노출합니다.</p>
+          </article>
+          <article class="card reveal">
+            <div class="icon">04</div>
+            <h3>모바일 문의 최적화</h3>
+            <p>짧은 동선에서 바로 문의할 수 있도록 폼 접근을 단순하게 구성했습니다.</p>
+          </article>
+        </div>
+
+        <div class="trust-block reveal" aria-label="신뢰 보강 지표">
+          <div class="trust-item">
+            <div class="n"><span data-count="44">0</span>%</div>
+            <div class="t">문의 전환 개선</div>
+          </div>
+          <div class="trust-item">
+            <div class="n"><span data-count="2">0</span>시간</div>
+            <div class="t">평균 1차 응답</div>
+          </div>
+          <div class="trust-item">
+            <div class="n"><span data-count="640">0</span>+</div>
+            <div class="t">누적 진행 건수</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="details">
+      <div class="container">
+        <h2>상세설명</h2>
+        <p class="lead">프로세스, FAQ, 준비사항을 한 번에 확인해 문의 결정을 명확히 도와줍니다.</p>
+
+        <div class="layout">
+          <article class="card reveal">
+            <h3 style="margin-bottom:12px">프로세스</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="k">문의</div>
+                <h3>요청 접수</h3>
+                <p>현재 상황과 목표를 확인하고 필요한 정보를 정리합니다.</p>
+              </div>
+              <div class="step">
+                <div class="k">상담</div>
+                <h3>범위·일정 제안</h3>
+                <p>요청 기준으로 진행 범위와 예상 일정을 구체적으로 안내합니다.</p>
+              </div>
+              <div class="step">
+                <div class="k">진행/결과</div>
+                <h3>실행 및 공유</h3>
+                <p>주요 단계별 결과를 공유하고 다음 액션을 명확히 전달합니다.</p>
+              </div>
+            </div>
+            <div class="notice">상세안내: 준비사항(목표·자료), 커뮤니케이션 방식(단계별 공유), 유의사항(검수 일정 협의)</div>
+          </article>
+
+          <article class="card reveal">
+            <h3 style="margin-bottom:12px">FAQ</h3>
+            <div class="faq">
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">비용은 어떻게 산정되나요?<span>＋</span></button>
+                <div class="a"><p>요청 범위와 일정 기준으로 산정하며, 상담 후 상세 견적 범위를 안내드립니다.</p></div>
+              </div>
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">진행 기간은 얼마나 걸리나요?<span>＋</span></button>
+                <div class="a"><p>일반적으로 2~4주입니다. 자료 준비 상태와 검수 일정에 따라 변동될 수 있습니다.</p></div>
+              </div>
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">응답 시간은 어느 정도인가요?<span>＋</span></button>
+                <div class="a"><p>영업시간 기준 평균 2시간 이내 1차 회신을 제공합니다.</p></div>
+              </div>
+              <div class="faq-item">
+                <button class="q" aria-expanded="false">진행 범위는 어떻게 정해지나요?<span>＋</span></button>
+                <div class="a"><p>문의 내용과 목표를 기준으로 우선순위를 정리해 범위를 합의합니다.</p></div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="mid-cta reveal">
+          <div>
+            <h3>지금 문의하면 우리 상황에 맞는 초기 전환 점검안을 빠르게 받아볼 수 있습니다.</h3>
+            <p>preview와 승격 이후 동작 검증 포인트까지 함께 안내드립니다.</p>
+          </div>
+          <a href="#contact" class="btn main">맞춤 제안 받아보기</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="container">
+        <h2>문의하기</h2>
+        <p class="lead">필수 정보만 입력하면 됩니다. 평균 2시간 이내 1차 회신 후 다음 단계를 안내드립니다.</p>
+
+        <div class="wrap">
+          <article class="card reveal">
+            <form id="leadForm" novalidate>
+              <div class="form-grid">
+                <div>
+                  <label for="name">담당자명 *</label>
+                  <input id="name" name="name" autocomplete="name" required />
+                  <div class="err" data-err="name" aria-live="polite"></div>
+                </div>
+                <div>
+                  <label for="contactInfo">연락처 또는 이메일 *</label>
+                  <input id="contactInfo" name="contactInfo" autocomplete="email" required />
+                  <div class="err" data-err="contactInfo" aria-live="polite"></div>
+                </div>
+                <div>
+                  <label for="type">문의 유형</label>
+                  <select id="type" name="type">
+                    <option value="">선택해주세요</option>
+                    <option>원페이지 신규 구축</option>
+                    <option>전환 흐름 개선</option>
+                    <option>운영 점검 상담</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="message">요청 내용 *</label>
+                  <textarea id="message" name="message" rows="4" required placeholder="현재 상황, 목표, 검토 중인 항목을 간단히 작성해주세요."></textarea>
+                  <div class="err" data-err="message" aria-live="polite"></div>
+                </div>
+              </div>
+              <button type="submit" class="btn main" style="margin-top:14px">간편 문의 남기기</button>
+              <p id="ok" class="ok">문의가 접수되었습니다. 2시간 이내 1차 회신 후 상담 일정을 안내드립니다.</p>
+            </form>
+          </article>
+
+          <aside class="card reveal" aria-label="문의 후 안내">
+            <h3 style="margin-bottom:10px">문의 후 다음 단계</h3>
+            <ol style="margin:0;padding-left:18px;color:#334155">
+              <li>접수 확인 메시지 발송</li>
+              <li>상담 가능 시간 안내</li>
+              <li>요청 범위 기반 제안 전달</li>
+            </ol>
+            <hr style="border:0;border-top:1px solid var(--line);margin:16px 0" />
+            <p style="margin:0;color:var(--muted)">
+              운영시간: 평일 09:00~18:00 (서울)<br />
+              운영 점검 요청은 문의 내용에 “점검”으로 표시해 주세요.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot">
+      <section>
+        <h4>리웹즈 와일드카드 전환 점검</h4>
+        <p style="margin:0">브랜드 신뢰 형성과 문의 전환을 한 페이지에서 완결하는 서울 기반 서비스 브랜드.</p>
+      </section>
+      <section>
+        <h4>연락 채널</h4>
+        <p style="margin:0">서울특별시<br />02-0000-0000<br />hello@example.net</p>
+      </section>
+      <section>
+        <h4>정책</h4>
+        <p style="margin:0">개인정보처리방침<br />이용약관<br />© 2026 리웹즈 와일드카드 전환 점검</p>
+      </section>
+    </div>
+  </footer>
+
+  <div class="mobile-cta">
+    <a href="#contact" class="btn main">지금 문의하기</a>
+  </div>
+
+  <script>
+    const revealObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting) entry.target.classList.add('show');
+      });
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+
+    const easeOut = t => 1 - Math.pow(1 - t, 3);
+    const animateCount = (el)=>{
+      const target = +el.dataset.count || 0;
+      const start = performance.now();
+      const duration = 850;
+      const tick = (now)=>{
+        const p = Math.min((now - start) / duration, 1);
+        el.textContent = Math.floor(target * easeOut(p));
+        if(p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const countObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting && !entry.target.dataset.done){
+          entry.target.dataset.done = "1";
+          animateCount(entry.target);
+        }
+      });
+    },{threshold:.7});
+    document.querySelectorAll('[data-count]').forEach(el=>countObserver.observe(el));
+
+    document.querySelectorAll('.faq-item').forEach(item=>{
+      const button = item.querySelector('.q');
+      button.addEventListener('click', ()=>{
+        const open = item.classList.toggle('open');
+        button.setAttribute('aria-expanded', String(open));
+        button.querySelector('span').textContent = open ? '－' : '＋';
+      });
+    });
+
+    const form = document.getElementById('leadForm');
+    const success = document.getElementById('ok');
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      success.style.display = 'none';
+      let valid = true;
+
+      ['name','contactInfo','message'].forEach(id=>{
+        const input = document.getElementById(id);
+        const err = document.querySelector(`[data-err="${id}"]`);
+        err.textContent = '';
+        if(!input.value.trim()){
+          err.textContent = '필수 항목을 입력해주세요.';
+          valid = false;
+        }
+      });
+
+      const contact = document.getElementById('contactInfo');
+      const contactErr = document.querySelector('[data-err="contactInfo"]');
+      if(contact.value.trim() && contact.value.trim().length < 5){
+        contactErr.textContent = '연락 가능한 정보를 정확히 입력해주세요.';
+        valid = false;
+      }
+
+      if(!valid) return;
+      form.reset();
+      success.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
