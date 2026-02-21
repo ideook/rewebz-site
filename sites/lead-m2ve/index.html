@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>디자인에이전트 테스트 | 신뢰 기반 리드 전환 랜딩페이지</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111c37;
+      --card:#132144;
+      --text:#eef2ff;
+      --muted:#b8c2e6;
+      --line:rgba(190,205,255,.24);
+      --brand:#7dd3fc;
+      --brand-2:#22d3ee;
+      --accent:#fde68a;
+      --ok:#86efac;
+      --shadow:0 20px 60px rgba(6,10,24,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:"Pretendard Variable","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      background:
+        radial-gradient(1000px 600px at 90% -10%, rgba(34,211,238,.17), transparent 55%),
+        radial-gradient(900px 520px at -10% 30%, rgba(125,211,252,.13), transparent 50%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.6;
+      letter-spacing:-0.01em;
+    }
+
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 90px}
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 0 24px;
+    }
+    .logo{
+      font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+      padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03)
+    }
+    .nav a{
+      color:var(--text);text-decoration:none;font-size:14px;opacity:.88
+    }
+
+    .hero{
+      display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:stretch;
+    }
+    .hero-left{
+      background:linear-gradient(155deg, rgba(255,255,255,.03), rgba(255,255,255,0) 45%), var(--panel);
+      border:1px solid var(--line);border-radius:28px;padding:46px 42px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+    }
+    .hero-left:before{
+      content:"";
+      position:absolute;inset:auto -70px -70px auto;width:280px;height:280px;border-radius:50%;
+      background:radial-gradient(circle, rgba(125,211,252,.4), rgba(125,211,252,0) 68%);
+      filter:blur(8px);
+    }
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);color:var(--muted);font-size:12px;background:rgba(255,255,255,.02)
+    }
+    .eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block}
+    h1{
+      margin:18px 0 14px;font-size:clamp(30px,4.3vw,56px);line-height:1.12;letter-spacing:-.03em;
+    }
+    .hero p{margin:0;color:var(--muted);font-size:17px;max-width:56ch}
+    .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+    .btn{
+      appearance:none;border:0;cursor:pointer;
+      font-weight:700;border-radius:14px;padding:14px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:8px
+    }
+    .btn.primary{
+      color:#03111d;background:linear-gradient(95deg,var(--brand),var(--brand-2));
+      box-shadow:0 10px 28px rgba(34,211,238,.28);
+    }
+    .btn.secondary{
+      color:var(--text);background:transparent;border:1px solid var(--line)
+    }
+
+    .proof{
+      margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px
+    }
+    .proof div{
+      border:1px solid var(--line);border-radius:14px;padding:14px 12px;background:rgba(255,255,255,.02)
+    }
+    .proof strong{display:block;font-size:18px}
+    .proof span{font-size:12px;color:var(--muted)}
+
+    .hero-right{
+      display:grid;grid-template-rows:1fr auto;gap:14px;
+    }
+    .quote, .mini{
+      border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:var(--shadow);
+    }
+    .quote{padding:30px}
+    .quote h3{margin:0 0 10px;font-size:20px}
+    .quote p{margin:0;color:var(--muted)}
+    .mini{
+      padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px
+    }
+    .mini article{
+      border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.02)
+    }
+    .mini b{display:block;font-size:13px;margin-bottom:6px}
+    .mini small{color:var(--muted)}
+
+    .section{
+      margin-top:26px;
+      display:grid;grid-template-columns:1fr 1fr;gap:26px;
+    }
+
+    .panel{
+      border:1px solid var(--line);border-radius:24px;background:var(--panel);padding:28px;
+    }
+    .panel h2{margin:0 0 14px;font-size:28px;letter-spacing:-.02em}
+    .panel p{margin:0;color:var(--muted)}
+
+    .steps{display:grid;gap:12px;margin-top:16px}
+    .step{
+      border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(255,255,255,.02)
+    }
+    .step b{display:block;margin-bottom:4px}
+    .step span{color:var(--muted);font-size:14px}
+
+    .form-card{
+      background:linear-gradient(180deg, rgba(125,211,252,.08), rgba(125,211,252,0) 32%), var(--panel);
+    }
+    form{display:grid;gap:10px;margin-top:14px}
+    label{font-size:13px;color:var(--muted)}
+    input, textarea, select{
+      width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(8,14,33,.65);color:var(--text);outline:none;
+    }
+    input:focus, textarea:focus, select:focus{border-color:var(--brand)}
+    textarea{min-height:96px;resize:vertical}
+    .consent{
+      display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);margin-top:2px
+    }
+    .consent input{width:auto;margin-top:2px}
+
+    .footer{
+      margin-top:28px;padding:20px;border:1px solid var(--line);border-radius:18px;
+      display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:13px
+    }
+
+    @media (max-width:980px){
+      .hero,.section{grid-template-columns:1fr}
+      .proof{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:560px){
+      .hero-left{padding:30px 22px}
+      .proof{grid-template-columns:1fr}
+      .mini{grid-template-columns:1fr}
+      .panel{padding:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <div class="logo">DESIGN AGENT TEST</div>
+      <a href="#lead">서울 기업 맞춤 상담</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <article class="hero-left">
+          <span class="eyebrow"><i></i>서울 서비스업 전문 리드 전환 설계</span>
+          <h1>“디자인이 예뻐 보이는 것”을 넘어,<br>신뢰가 전환되는 구조를 만듭니다.</h1>
+          <p>
+            디자인에이전트 테스트는 서비스업 브랜드를 위해 첫 인상부터 문의 전환까지
+            하나의 흐름으로 설계합니다. 깔끔한 시각, 명확한 메시지, 불안 없는 의사결정 경험으로
+            <strong style="color:var(--text)">‘문의하고 싶게 만드는 랜딩페이지’</strong>를 제공합니다.
+          </p>
+          <div class="cta-row">
+            <a class="btn primary" href="#lead">무료 진단 요청하기</a>
+            <a class="btn secondary" href="#trust">신뢰 설계 방식 보기</a>
+          </div>
+          <div class="proof">
+            <div><strong>24시간</strong><span>초기 피드백 제공</span></div>
+            <div><strong>1:1 담당</strong><span>기획-디자인 단일 창구</span></div>
+            <div><strong>전환 중심</strong><span>감각보다 성과 우선</span></div>
+          </div>
+        </article>
+
+        <aside class="hero-right">
+          <div class="quote">
+            <h3>왜 지금, 랜딩페이지를 다시 설계해야 할까요?</h3>
+            <p>
+              고객은 3초 안에 “믿을 수 있는 업체인지”부터 판단합니다.
+              우리는 시각 요소만 바꾸지 않습니다. 의심을 줄이고 확신을 높이는
+              정보 배치, 카피 구조, CTA 흐름까지 함께 설계합니다.
+            </p>
+          </div>
+          <div class="mini">
+            <article>
+              <b>지역 적합성</b>
+              <small>서울 고객의 검색·문의 행동 패턴 반영</small>
+            </article>
+            <article>
+              <b>업종 특화</b>
+              <small>서비스업 의사결정 포인트 중심 구성</small>
+            </article>
+          </div>
+        </aside>
+      </section>
+
+      <section id="trust" class="section">
+        <article class="panel">
+          <h2>신뢰가 생기는 3단계</h2>
+          <p>방문자가 ‘관심 → 신뢰 → 문의’로 자연스럽게 이동하도록 설계합니다.</p>
+          <div class="steps">
+            <div class="step">
+              <b>01. 첫 5초 신뢰 확보</b>
+              <span>업체명, 전문성, 핵심 가치 제안을 한눈에 이해되게 구조화</span>
+            </div>
+            <div class="step">
+              <b>02. 비교 불안 해소</b>
+              <span>서비스 범위·진행 방식·응대 속도를 명확히 제시해 고민 시간 단축</span>
+            </div>
+            <div class="step">
+              <b>03. 망설임 없는 CTA</b>
+              <span>문의 전 필요한 정보만 남기게 하여 이탈률을 줄이고 리드 전환 유도</span>
+            </div>
+          </div>
+        </article>
+
+        <article id="lead" class="panel form-card">
+          <h2>지금 바로 리드 전환 진단 받기</h2>
+          <p>간단한 정보만 남겨주시면, 현재 페이지의 전환 개선 포인트를 빠르게 안내드립니다.</p>
+          <form>
+            <div>
+              <label for="name">담당자명</label>
+              <input id="name" type="text" placeholder="이름을 입력하세요" required>
+            </div>
+            <div>
+              <label for="company">업체명</label>
+              <input id="company" type="text" value="디자인에이전트 테스트" required>
+            </div>
+            <div>
+              <label for="contact">연락처</label>
+              <input id="contact" type="tel" placeholder="010-0000-0000" required>
+            </div>
+            <div>
+              <label for="goal">문의 목적</label>
+              <select id="goal">
+                <option>신규 랜딩페이지 제작</option>
+                <option>기존 페이지 전환율 개선</option>
+                <option>브랜딩/카피 리뉴얼</option>
+              </select>
+            </div>
+            <div>
+              <label for="memo">현재 고민</label>
+              <textarea id="memo" placeholder="예: 방문은 있는데 문의가 거의 없습니다."></textarea>
+            </div>
+            <label class="consent">
+              <input type="checkbox" required>
+              <span>개인정보 수집 및 상담 목적 활용에 동의합니다.</span>
+            </label>
+            <button class="btn primary" type="submit">무료 상담 신청하기</button>
+          </form>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>업체명: 디자인에이전트 테스트 · 업종: 서비스업 · 지역: 서울</span>
+      <span>기존URL: https://example.com · slug: lead-m2ve</span>
+    </footer>
+  </div>
+</body>
+</html>
