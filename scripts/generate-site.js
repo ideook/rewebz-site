@@ -12,12 +12,26 @@ const BASE_DIR = path.resolve(__dirname, '..', 'sites');
 function esc(v = '') { return String(v).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
 function hash(s = '') { let h = 0; for (const c of s) { h = ((h << 5) - h) + c.charCodeAt(0); h |= 0; } return Math.abs(h); }
 
-function pickTheme(category = '', goal = '') {
-  const c = (category || '').toLowerCase();
-  if (c.includes('판매')) return { a: '#ffd08a', b: '#ff8fa4', bg: '#1b1220' };
-  if (c.includes('엔지니어링') || c.includes('제조')) return { a: '#94ffb8', b: '#7ca8ff', bg: '#0f1725' };
-  if ((goal || '').includes('예약') || (goal || '').includes('문의')) return { a: '#8fe9ff', b: '#8ea9ff', bg: '#101a2f' };
-  return { a: '#79f3c2', b: '#8aa9ff', bg: '#0d162b' };
+function theme(category = '') {
+  const c = category.toLowerCase();
+  if (c.includes('판매')) return { a: '#ffb37b', b: '#ff6d98', bg: '#1b0f1b' };
+  if (c.includes('엔지니어링') || c.includes('제조')) return { a: '#9dffae', b: '#7ea2ff', bg: '#0d1422' };
+  return { a: '#8ce9ff', b: '#8ea8ff', bg: '#101a2d' };
+}
+
+function cards(goal='') {
+  if (/예약|문의|전환/.test(goal)) {
+    return [
+      ['첫 화면 가치 제안', '핵심 강점을 한 문장으로 압축해 첫 인상을 강화합니다.'],
+      ['CTA 흐름 재설계', '상단·중단·하단 문의 유도 동선을 명확하게 구성합니다.'],
+      ['신뢰요소 강조', '후기/사례/성과 지표로 의사결정 속도를 높입니다.'],
+    ];
+  }
+  return [
+    ['정보 구조 개선', '고객이 원하는 정보를 빠르게 찾는 구조로 재정렬합니다.'],
+    ['모바일 우선 최적화', '실사용 환경 중심으로 가독성과 클릭 흐름을 개선합니다.'],
+    ['브랜드 톤 정리', '문구와 시각 언어를 통일해 신뢰감을 높입니다.'],
+  ];
 }
 
 function render(row) {
@@ -26,30 +40,21 @@ function render(row) {
   const region = row.region || '지역 미정';
   const goal = row.goal || '문의 전환율 개선';
   const site = row.website_url || '';
-  const t = pickTheme(category, goal);
-  const variant = hash(`${row.slug}-${business}-${goal}`) % 2;
+  const t = theme(category);
+  const v = hash(`${row.slug}|${business}|${goal}`) % 3;
+  const cardHtml = cards(goal).map(([h,p]) => `<article><h3>${esc(h)}</h3><p>${esc(p)}</p></article>`).join('');
 
-  if (variant === 0) {
-    return `<!doctype html><html lang="ko"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${esc(business)} | mockup</title>
-    <style>
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#eef2ff;background:radial-gradient(700px 300px at 5% -10%,${t.a}33,transparent 60%),radial-gradient(700px 300px at 95% -20%,${t.b}26,transparent 60%),${t.bg}}
-    .wrap{max-width:980px;margin:0 auto;padding:44px 20px}.hero{border:1px solid #2b3965;border-radius:20px;padding:24px;background:linear-gradient(160deg,#ffffff10,#ffffff05)}
-    .badge{display:inline-block;border:1px solid #2b3965;border-radius:999px;padding:6px 10px;color:#adbbdc;font-size:12px}
-    h1{font-size:clamp(32px,5vw,56px);line-height:1.05;margin:12px 0}.a{color:${t.a}} .lead{color:#aab8d9;line-height:1.6}
-    .grid{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-    .card{border:1px solid #2b3965;border-radius:14px;padding:14px;background:#101a35}
-    .btn{display:inline-block;margin-top:14px;text-decoration:none;padding:11px 14px;border-radius:10px;font-weight:700;background:linear-gradient(90deg,${t.a},${t.b});color:#081223}
-    </style></head><body><main class="wrap"><section class="hero"><span class="badge">${esc(region)} · ${esc(category)}</span><h1>${esc(business)} <span class="a">개선 목업</span></h1><p class="lead">목표: ${esc(goal)}</p><div class="grid"><article class="card"><h3>메시지 재정렬</h3><p>첫 화면에서 핵심 가치를 즉시 전달합니다.</p></article><article class="card"><h3>전환 동선 강화</h3><p>문의/예약 CTA 위치를 최적화합니다.</p></article><article class="card"><h3>신뢰 요소 추가</h3><p>후기/사례/지표로 의사결정 속도를 높입니다.</p></article></div>${site ? `<a class="btn" href="${esc(site)}" target="_blank" rel="noreferrer">기존 사이트 보기</a>` : ''}</section></main></body></html>`;
-  }
+  if (v === 0) return `<!doctype html><html lang='ko'><head><meta charset='UTF-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/><title>${esc(business)}</title>
+  <style>body{margin:0;background:${t.bg};color:#eef3ff;font-family:system-ui}.w{max-width:1080px;margin:0 auto;padding:42px 20px}.hero{border:1px solid #2a365d;border-radius:22px;padding:26px;background:linear-gradient(145deg,${t.a}22,${t.b}12)}h1{font-size:clamp(34px,6vw,64px);line-height:1.02;margin:12px 0}.a{color:${t.a}}.meta{opacity:.75}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}article{border:1px solid #2a365d;border-radius:14px;padding:12px;background:#101832}h3{margin:0 0 8px}p{margin:0;opacity:.85;line-height:1.5}.btn{display:inline-block;margin-top:14px;background:linear-gradient(90deg,${t.a},${t.b});color:#081322;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}</style>
+  </head><body><main class='w'><section class='hero'><div class='meta'>${esc(region)} · ${esc(category)}</div><h1>${esc(business)}<br/><span class='a'>Growth Mockup</span></h1><p>목표: ${esc(goal)}</p><section class='grid'>${cardHtml}</section>${site?`<a class='btn' href='${esc(site)}' target='_blank'>기존 사이트 보기</a>`:''}</section></main></body></html>`;
 
-  return `<!doctype html><html lang="ko"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${esc(business)} | mockup</title>
-  <style>
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#eef2ff;background:${t.bg}}
-  .hero{padding:52px 20px;background:linear-gradient(120deg,${t.a}22,${t.b}11)} .inner{max-width:1040px;margin:0 auto}
-  .meta{font-size:12px;opacity:.8} h1{font-size:clamp(34px,6vw,62px);line-height:1.05;margin:10px 0 6px}.a{color:${t.a}} p{opacity:.85;line-height:1.6}
-  .strip{max-width:1040px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:-20px}
-  .panel{background:#101a35;border:1px solid #2b3965;border-radius:14px;padding:14px}.cta{display:inline-block;margin-top:10px;text-decoration:none;padding:11px 14px;border-radius:10px;font-weight:700;background:linear-gradient(90deg,${t.a},${t.b});color:#081223}
-  </style></head><body><section class="hero"><div class="inner"><div class="meta">${esc(region)} · ${esc(category)}</div><h1>${esc(business)}<br/><span class="a">Growth Redesign</span></h1><p>목표: ${esc(goal)}</p>${site ? `<a class="cta" href="${esc(site)}" target="_blank" rel="noreferrer">기존 사이트 보기</a>` : ''}</div></section><section class="strip"><article class="panel"><h3>핵심 카피 정렬</h3><p>서비스 강점을 한 문장으로 응축해 첫 인상을 강화합니다.</p></article><article class="panel"><h3>행동 유도 구조</h3><p>상담/예약/문의 행동으로 자연스럽게 흐르는 동선을 설계합니다.</p></article><article class="panel"><h3>신뢰 신호 배치</h3><p>검증 요소를 적재적소에 배치해 전환 장벽을 낮춥니다.</p></article></section></body></html>`;
+  if (v === 1) return `<!doctype html><html lang='ko'><head><meta charset='UTF-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/><title>${esc(business)}</title>
+  <style>body{margin:0;background:#0b0f18;color:#eef3ff;font-family:system-ui}.band{padding:56px 20px;background:radial-gradient(900px 320px at 20% -20%,${t.a}33,transparent),radial-gradient(900px 320px at 80% -30%,${t.b}33,transparent)}.inner{max-width:1100px;margin:0 auto}.pill{display:inline-block;padding:6px 10px;border:1px solid #33456f;border-radius:999px;font-size:12px;opacity:.8}h1{font-size:clamp(36px,6vw,68px);margin:10px 0 8px}.cards{max-width:1100px;margin:-28px auto 20px;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}.c{background:#121a31;border:1px solid #33456f;border-radius:14px;padding:14px}.c h3{margin:0 0 8px}.c p{margin:0;opacity:.85}.cta{display:inline-block;margin-top:10px;padding:10px 14px;border-radius:10px;background:${t.a};color:#081322;text-decoration:none;font-weight:700}</style>
+  </head><body><header class='band'><div class='inner'><span class='pill'>${esc(region)} · ${esc(category)}</span><h1>${esc(business)}</h1><p>목표: ${esc(goal)}</p>${site?`<a class='cta' href='${esc(site)}' target='_blank'>기존 사이트 보기</a>`:''}</div></header><section class='cards'>${cardHtml.replaceAll('<article>','<article class="c">')}</section></body></html>`;
+
+  return `<!doctype html><html lang='ko'><head><meta charset='UTF-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/><title>${esc(business)}</title>
+  <style>body{margin:0;color:#f4f7ff;background:linear-gradient(180deg,#0e1527,#18233f);font-family:system-ui}.w{max-width:980px;margin:0 auto;padding:36px 20px}.top{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.panel{border:1px solid #30406c;border-radius:16px;padding:16px;background:#0f1832}.title{font-size:clamp(28px,4.8vw,54px);line-height:1.06;margin:8px 0}.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.kpi div{border:1px solid #30406c;border-radius:10px;padding:10px;background:#121d3a}.list{margin-top:12px;display:grid;gap:8px}.item{border:1px solid #30406c;border-radius:12px;padding:12px;background:#121d3a}.btn{display:inline-block;margin-top:10px;background:linear-gradient(90deg,${t.a},${t.b});color:#081322;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}</style>
+  </head><body><main class='w'><section class='top'><article class='panel'><div>${esc(region)} · ${esc(category)}</div><h1 class='title'>${esc(business)}<br/>Redesign Concept</h1><p>목표: ${esc(goal)}</p>${site?`<a class='btn' href='${esc(site)}' target='_blank'>기존 사이트 보기</a>`:''}</article><aside class='panel'><h3 style='margin:0 0 8px'>핵심 KPI 방향</h3><div class='kpi'><div>신뢰 +18%</div><div>문의 +22%</div><div>이탈 -15%</div></div></aside></section><section class='list'>${cards(goal).map(([h,p])=>`<article class='item'><strong>${esc(h)}</strong><p style='margin:6px 0 0;opacity:.86'>${esc(p)}</p></article>`).join('')}</section></main></body></html>`;
 }
 
 async function main() {
@@ -62,44 +67,30 @@ async function main() {
   const rows = data.values || [];
 
   let created = 0, updated = 0;
-
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     const status = (r[2] || '').trim();
-    const id = r[0] || '';
-    const business_name = r[3] || '';
-    const website_url = r[4] || '';
-    const category = r[8] || '';
-    const region = r[9] || '';
-    const goal = r[10] || '';
-    const notes = r[11] || '';
     const slug = (r[12] || '').trim();
-    const mockup_url = (r[13] || '').trim();
-
     if (!slug || !['MOCKUP_LIVE', 'READY'].includes(status)) continue;
 
-    const row = { id, business_name, website_url, category, region, goal, notes, slug, mockup_url };
+    const row = {
+      id: r[0] || '', business_name: r[3] || '', website_url: r[4] || '',
+      category: r[8] || '', region: r[9] || '', goal: r[10] || '', notes: r[11] || '',
+      slug, mockup_url: r[13] || ''
+    };
+
     const siteDir = path.join(BASE_DIR, slug);
     const indexPath = path.join(siteDir, 'index.html');
     const briefPath = path.join(siteDir, 'brief.json');
-
     fs.mkdirSync(siteDir, { recursive: true });
 
-    const prevBrief = fs.existsSync(briefPath) ? JSON.parse(fs.readFileSync(briefPath, 'utf8')) : null;
-    const changed = JSON.stringify(prevBrief) !== JSON.stringify(row);
+    const prev = fs.existsSync(briefPath) ? JSON.parse(fs.readFileSync(briefPath, 'utf8')) : null;
+    const changed = JSON.stringify(prev) !== JSON.stringify(row);
     if (!fs.existsSync(indexPath) || changed) {
       fs.writeFileSync(briefPath, JSON.stringify(row, null, 2));
       fs.writeFileSync(indexPath, render(row));
-      if (fs.existsSync(indexPath) && prevBrief) updated++; else created++;
-
-      await sheets.spreadsheets.values.batchUpdate({
-        spreadsheetId: SHEET_ID,
-        requestBody: {
-          valueInputOption: 'RAW',
-          data: [{ range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}source:generated`]] }],
-        },
-      });
-      console.log(`${changed ? 'updated' : 'generated'} source for ${slug}`);
+      if (prev) updated++; else created++;
+      console.log(`${prev ? 'updated' : 'generated'} source for ${slug}`);
     }
   }
 

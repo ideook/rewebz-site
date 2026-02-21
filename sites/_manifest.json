@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-21T00:00:08.341Z",
+  "generated_at": "2026-02-21T00:02:44.954Z",
   "count": 11,
   "items": [
     {
@@ -9,7 +9,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://e2e-1771630049-gxne.rewebz.com",
-      "updated_at": "2026-02-21T00:00:07.905Z"
+      "updated_at": "2026-02-21T00:02:44.870Z"
     },
     {
       "slug": "e2e-1771612645-685a",
@@ -18,7 +18,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://e2e-1771612645-685a.rewebz.com",
-      "updated_at": "2026-02-21T00:00:07.617Z"
+      "updated_at": "2026-02-21T00:02:44.869Z"
     },
     {
       "slug": "e2e-1771612600-vr9r",
@@ -27,7 +27,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://e2e-1771612600-vr9r.rewebz.com",
-      "updated_at": "2026-02-21T00:00:07.335Z"
+      "updated_at": "2026-02-21T00:02:44.868Z"
     },
     {
       "slug": "e2e-1771612559-4ifc",
@@ -36,7 +36,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://e2e-1771612559-4ifc.rewebz.com",
-      "updated_at": "2026-02-21T00:00:07.037Z"
+      "updated_at": "2026-02-21T00:02:44.867Z"
     },
     {
       "slug": "e2e-1771612541-yqti",
@@ -45,16 +45,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://e2e-1771612541-yqti.rewebz.com",
-      "updated_at": "2026-02-21T00:00:06.744Z"
-    },
-    {
-      "slug": "2-pz7q",
-      "business_name": "알림2차 테스트",
-      "category": "판매업",
-      "region": "경기",
-      "goal": "신규 문의 증가",
-      "mockup_url": "https://2-pz7q.rewebz.com",
-      "updated_at": "2026-02-21T00:00:06.457Z"
+      "updated_at": "2026-02-21T00:02:44.867Z"
     },
     {
       "slug": "lead-xn74",
@@ -63,16 +54,16 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://lead-xn74.rewebz.com",
-      "updated_at": "2026-02-21T00:00:06.081Z"
+      "updated_at": "2026-02-21T00:02:44.866Z"
     },
     {
-      "slug": "lead-3916",
-      "business_name": "리뉴얼치과 테스트",
-      "category": "서비스업",
-      "region": "인천",
-      "goal": "예약 전환율 증가 및 문의 개선",
-      "mockup_url": "https://lead-3916.rewebz.com",
-      "updated_at": "2026-02-21T00:00:05.779Z"
+      "slug": "2-pz7q",
+      "business_name": "알림2차 테스트",
+      "category": "판매업",
+      "region": "경기",
+      "goal": "신규 문의 증가",
+      "mockup_url": "https://2-pz7q.rewebz.com",
+      "updated_at": "2026-02-21T00:02:44.866Z"
     },
     {
       "slug": "lead-god0",
@@ -81,7 +72,16 @@
       "region": "대전",
       "goal": "예약 전환율 증가",
       "mockup_url": "https://lead-god0.rewebz.com",
-      "updated_at": "2026-02-21T00:00:05.485Z"
+      "updated_at": "2026-02-21T00:02:44.865Z"
+    },
+    {
+      "slug": "lead-3916",
+      "business_name": "리뉴얼치과 테스트",
+      "category": "서비스업",
+      "region": "인천",
+      "goal": "예약 전환율 증가 및 문의 개선",
+      "mockup_url": "https://lead-3916.rewebz.com",
+      "updated_at": "2026-02-21T00:02:44.865Z"
     },
     {
       "slug": "lead-ukfm",
@@ -90,7 +90,7 @@
       "region": "부산",
       "goal": "문의 증가",
       "mockup_url": "https://lead-ukfm.rewebz.com",
-      "updated_at": "2026-02-21T00:00:04.845Z"
+      "updated_at": "2026-02-21T00:02:44.864Z"
     },
     {
       "slug": "lead-gcso",
@@ -99,7 +99,7 @@
       "region": "서울",
       "goal": "문의 전환율 개선",
       "mockup_url": "https://lead-gcso.rewebz.com",
-      "updated_at": "2026-02-21T00:00:04.521Z"
+      "updated_at": "2026-02-21T00:02:44.863Z"
     }
   ]
 }
