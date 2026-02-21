@@ -10,6 +10,24 @@ const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+const BUILD_MARKER_NAME = 'rewebz-build-marker';
+
+function markerContent(slug = '') {
+  return `rwz-live-v2:${slug}`;
+}
+
+function escRe(s = '') {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasBuildMarker(html = '', slug = '') {
+  const marker = markerContent(slug);
+  const rx = new RegExp(
+    `<meta[^>]*name=["']${escRe(BUILD_MARKER_NAME)}["'][^>]*content=["'][^"']*${escRe(marker)}[^"']*["'][^>]*>`,
+    'i',
+  );
+  return rx.test(String(html || ''));
+}
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -45,12 +63,12 @@ async function tenantApiOk(slug, tries = 3) {
       }
       const j = await r.json().catch(() => null);
       if (j?.ok && j?.kind === 'tenant' && (j?.slug || '').trim() === slug && /<html/i.test(j?.html || '')) {
-        return r.status;
+        return { code: r.status, markerOk: hasBuildMarker(j?.html || '', slug) };
       }
     } catch (_) {}
     await sleep(2500);
   }
-  return 0;
+  return { code: 0, markerOk: false };
 }
 
 function existsOnOrigin(slug) {
@@ -129,8 +147,8 @@ async function main() {
     if (!existsOnOrigin(slug)) continue;
 
     // hard gate 2: deployed runtime can read tenant source from /api/sitehtml
-    const sitehtmlCode = await tenantApiOk(slug, 3);
-    if (!sitehtmlCode) continue;
+    const sitehtml = await tenantApiOk(slug, 3);
+    if (!sitehtml.code || !sitehtml.markerOk) continue;
 
     // hard gate 3: tenant URL serves successfully
     const headCode = await headOk(url, 3);
@@ -144,7 +162,7 @@ async function main() {
           { range: `시트1!C${i + 1}`, values: [['LIVE']] },
           {
             range: `시트1!L${i + 1}`,
-            values: [[`${notes ? notes + ' | ' : ''}live:verified(git:origin/main,sitehtml:${sitehtmlCode},head:${headCode})`]],
+            values: [[`${notes ? notes + ' | ' : ''}live:verified(git:origin/main,sitehtml:${sitehtml.code},marker:ok,head:${headCode})`]],
           },
         ],
       },
@@ -155,7 +173,7 @@ async function main() {
       `- 업체: ${business || '(이름없음)'}`,
       `- slug: ${slug}`,
       `- URL: ${url}`,
-      `- checks: git(origin/main) + sitehtml(${sitehtmlCode}) + http(${headCode})`,
+      `- checks: git(origin/main) + sitehtml(${sitehtml.code}) + marker(ok) + http(${headCode})`,
       `- ID: ${id}`,
     ].join('\n'));
 

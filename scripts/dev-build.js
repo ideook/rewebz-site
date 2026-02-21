@@ -14,6 +14,29 @@ const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
 const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
+const BUILD_MARKER_NAME = 'rewebz-build-marker';
+
+function markerContent(slug='') {
+  return `rwz-live-v2:${slug}`;
+}
+
+function ensureBuildMarker(html='', slug='') {
+  const marker = markerContent(slug);
+  const tag = `<meta name="${BUILD_MARKER_NAME}" content="${marker}" data-rwz-hidden="1" />`;
+
+  if (new RegExp(`<meta[^>]*name=["']${BUILD_MARKER_NAME}["']`, 'i').test(html)) {
+    return html.replace(
+      new RegExp(`(<meta[^>]*name=["']${BUILD_MARKER_NAME}["'][^>]*content=["'])[^"']*(["'][^>]*>)`, 'i'),
+      `$1${marker}$2`,
+    );
+  }
+
+  if (/<head[^>]*>/i.test(html)) {
+    return html.replace(/<head[^>]*>/i, (m) => `${m}\n  ${tag}`);
+  }
+
+  return `${tag}\n${html}`;
+}
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 async function checkLive(url, tries=5) {
@@ -161,6 +184,8 @@ async function main() {
       });
       continue;
     }
+
+    html = ensureBuildMarker(html, slug);
 
     const v = validateHtml(html);
     if (!v.ok) {

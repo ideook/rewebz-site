@@ -8,6 +8,38 @@ const BASE_DIR = path.join(ROOT, 'sites');
 const out = path.join(ROOT, 'logs', 'deploy-queue.log');
 const manifestPath = path.join(BASE_DIR, '_manifest.json');
 const AUTO_GIT_PUSH = (process.env.AUTO_GIT_PUSH || '1') === '1';
+const BUILD_MARKER_NAME = 'rewebz-build-marker';
+
+function markerContent(slug = '') {
+  return `rwz-live-v2:${slug}`;
+}
+
+function ensureBuildMarker(html = '', slug = '') {
+  const marker = markerContent(slug);
+  const tag = `<meta name="${BUILD_MARKER_NAME}" content="${marker}" data-rwz-hidden="1" />`;
+
+  if (new RegExp(`<meta[^>]*name=["']${BUILD_MARKER_NAME}["']`, 'i').test(html)) {
+    return html.replace(
+      new RegExp(`(<meta[^>]*name=["']${BUILD_MARKER_NAME}["'][^>]*content=["'])[^"']*(["'][^>]*>)`, 'i'),
+      `$1${marker}$2`,
+    );
+  }
+
+  if (/<head[^>]*>/i.test(html)) {
+    return html.replace(/<head[^>]*>/i, (m) => `${m}\n  ${tag}`);
+  }
+
+  return `${tag}\n${html}`;
+}
+
+function ensureBuildMarkerInFile(indexPath, slug) {
+  if (!fs.existsSync(indexPath)) return false;
+  const raw = fs.readFileSync(indexPath, 'utf8');
+  const next = ensureBuildMarker(raw, slug);
+  if (next === raw) return false;
+  fs.writeFileSync(indexPath, next);
+  return true;
+}
 
 function sh(cmd) {
   return execSync(cmd, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
@@ -77,10 +109,12 @@ function main() {
     .filter((x) => fs.statSync(path.join(BASE_DIR, x)).isDirectory())
     .filter((x) => !x.startsWith('_'));
 
+  let markerPatched = 0;
   const items = slugs
     .map((slug) => {
       const brief = path.join(BASE_DIR, slug, 'brief.json');
       const index = path.join(BASE_DIR, slug, 'index.html');
+      if (ensureBuildMarkerInFile(index, slug)) markerPatched++;
       let meta = {};
       if (fs.existsSync(brief)) {
         try {
@@ -106,7 +140,7 @@ function main() {
     JSON.stringify({ generated_at: new Date().toISOString(), count: items.length, items }, null, 2),
   );
 
-  logLine(`deploy-check slugs=${slugs.length} manifest=ok`);
+  logLine(`deploy-check slugs=${slugs.length} manifest=ok marker_patched=${markerPatched}`);
 
   try {
     gitSync();
