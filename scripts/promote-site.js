@@ -24,6 +24,9 @@ const BUILD_MARKER_NAME = 'rewebz-build-marker';
 function parseArgs(argv) {
   const opts = {
     slug: '',
+    id: '',
+    url: '',
+    ref: '',
     dryRun: false,
     noTelegram: false,
     timeoutSec: 600,
@@ -37,6 +40,30 @@ function parseArgs(argv) {
     }
     if (a.startsWith('--slug=')) {
       opts.slug = a.slice('--slug='.length).trim();
+      continue;
+    }
+    if (a === '--id') {
+      opts.id = String(argv[++i] || '').trim();
+      continue;
+    }
+    if (a.startsWith('--id=')) {
+      opts.id = a.slice('--id='.length).trim();
+      continue;
+    }
+    if (a === '--url') {
+      opts.url = String(argv[++i] || '').trim();
+      continue;
+    }
+    if (a.startsWith('--url=')) {
+      opts.url = a.slice('--url='.length).trim();
+      continue;
+    }
+    if (a === '--ref') {
+      opts.ref = String(argv[++i] || '').trim();
+      continue;
+    }
+    if (a.startsWith('--ref=')) {
+      opts.ref = a.slice('--ref='.length).trim();
       continue;
     }
     if (a === '--dry-run') {
@@ -55,6 +82,13 @@ function parseArgs(argv) {
       opts.timeoutSec = Number(a.slice('--timeoutSec='.length)) || 600;
       continue;
     }
+
+    // positional convenience: accept slug / id / url without flags
+    if (!a.startsWith('-') && !opts.ref) {
+      opts.ref = String(a || '').trim();
+      continue;
+    }
+
     throw new Error(`Unknown argument: ${a}`);
   }
 
@@ -91,11 +125,44 @@ function joinText(parts) {
 }
 
 function parseHostFromUrl(url = '') {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
   try {
-    return new URL(url).hostname.toLowerCase();
+    return new URL(raw).hostname.toLowerCase();
   } catch {
-    return '';
+    try {
+      return new URL(`https://${raw}`).hostname.toLowerCase();
+    } catch {
+      return '';
+    }
   }
+}
+
+function normalizeRef(ref = '') {
+  return String(ref || '').trim();
+}
+
+function extractSlugFromHost(host = '') {
+  const h = String(host || '').toLowerCase().replace(/\.$/, '');
+  if (!h) return '';
+
+  const suffixes = [...new Set([TENANT_ROOT_DOMAIN, ROOT_DOMAIN, `preview.${ROOT_DOMAIN}`])]
+    .filter(Boolean)
+    .map((x) => String(x).toLowerCase().replace(/\.$/, ''))
+    .sort((a, b) => b.length - a.length);
+
+  for (const s of suffixes) {
+    if (h === s || h === `www.${s}`) return '';
+    if (h.endsWith(`.${s}`)) {
+      const candidate = h.slice(0, -1 * (`.${s}`.length));
+      if (isValidSlug(candidate)) return candidate;
+    }
+  }
+  return '';
+}
+
+function extractSlugFromUrl(url = '') {
+  return extractSlugFromHost(parseHostFromUrl(url));
 }
 
 function withTeamSlug(url) {
@@ -283,10 +350,15 @@ async function loadSheets() {
   return google.sheets({ version: 'v4', auth });
 }
 
+async function readSheetRows(sheets) {
+  if (!sheets) return [];
+  const { data } = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: SHEET_RANGE });
+  return data.values || [];
+}
+
 async function findSheetRowBySlug(sheets, slug) {
   if (!sheets) return null;
-  const { data } = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: SHEET_RANGE });
-  const rows = data.values || [];
+  const rows = await readSheetRows(sheets);
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i] || [];
     if ((r[12] || '').trim().toLowerCase() === slug.toLowerCase()) {
@@ -297,6 +369,75 @@ async function findSheetRowBySlug(sheets, slug) {
     }
   }
   return null;
+}
+
+async function findSheetRowById(sheets, id) {
+  if (!sheets) return null;
+  const rows = await readSheetRows(sheets);
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i] || [];
+    if ((r[0] || '').trim() === id) {
+      return {
+        rowNum: i + 1,
+        row: r,
+      };
+    }
+  }
+  return null;
+}
+
+async function resolvePromotionTarget(sheets, opts) {
+  const explicitSlug = normalizeRef(opts.slug);
+  if (explicitSlug) {
+    if (!isValidSlug(explicitSlug)) throw new Error(`Invalid slug: ${explicitSlug}`);
+    const rowHit = await findSheetRowBySlug(sheets, explicitSlug).catch(() => null);
+    return { slug: explicitSlug.toLowerCase(), rowHit, sourceHintHost: '' };
+  }
+
+  const explicitUrl = normalizeRef(opts.url);
+  if (explicitUrl) {
+    const slug = extractSlugFromUrl(explicitUrl);
+    if (!slug) throw new Error(`Could not extract slug from URL: ${explicitUrl}`);
+    const rowHit = await findSheetRowBySlug(sheets, slug).catch(() => null);
+    return { slug, rowHit, sourceHintHost: parseHostFromUrl(explicitUrl) };
+  }
+
+  const explicitId = normalizeRef(opts.id);
+  if (explicitId) {
+    const rowHit = await findSheetRowById(sheets, explicitId).catch(() => null);
+    if (!rowHit) throw new Error(`Could not find sheet row by id: ${explicitId}`);
+    const slug = String(rowHit.row?.[12] || '').trim().toLowerCase();
+    if (!isValidSlug(slug)) throw new Error(`Row found but slug is invalid/missing for id=${explicitId}`);
+    return { slug, rowHit, sourceHintHost: '' };
+  }
+
+  const ref = normalizeRef(opts.ref);
+  if (ref) {
+    if (ref.startsWith('http://') || ref.startsWith('https://') || ref.includes('.')) {
+      const slug = extractSlugFromUrl(ref);
+      if (slug) {
+        const rowHit = await findSheetRowBySlug(sheets, slug).catch(() => null);
+        return { slug, rowHit, sourceHintHost: parseHostFromUrl(ref) };
+      }
+    }
+
+    if (/^rwz_/i.test(ref)) {
+      const rowHit = await findSheetRowById(sheets, ref).catch(() => null);
+      if (!rowHit) throw new Error(`Could not find sheet row by id: ${ref}`);
+      const slug = String(rowHit.row?.[12] || '').trim().toLowerCase();
+      if (!isValidSlug(slug)) throw new Error(`Row found but slug is invalid/missing for id=${ref}`);
+      return { slug, rowHit, sourceHintHost: '' };
+    }
+
+    if (isValidSlug(ref)) {
+      const rowHit = await findSheetRowBySlug(sheets, ref).catch(() => null);
+      return { slug: ref.toLowerCase(), rowHit, sourceHintHost: '' };
+    }
+
+    throw new Error(`Could not parse reference: ${ref}`);
+  }
+
+  throw new Error('Missing target. Use one of: --slug <slug> | --id <requestId> | --url <previewUrl> | --ref <value>');
 }
 
 async function updateSheetRowPromotion(sheets, rowNum, currentNotes, prodUrl, checksNote, dryRun = false) {
@@ -317,7 +458,10 @@ async function updateSheetRowPromotion(sheets, rowNum, currentNotes, prodUrl, ch
   });
 }
 
-function resolveSourceHost(slug, rowUrl = '') {
+function resolveSourceHost(slug, rowUrl = '', sourceHintHost = '') {
+  const byHint = parseHostFromUrl(sourceHintHost);
+  if (byHint) return byHint;
+
   const t = String(TENANT_ROOT_DOMAIN || '').toLowerCase();
   if (t.startsWith('preview.') || t.includes('.preview.')) {
     return `${slug}.${t}`;
@@ -345,18 +489,20 @@ async function sendTelegram(text, noTelegram) {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  if (!opts.slug) throw new Error('Missing --slug');
-  if (!isValidSlug(opts.slug)) throw new Error(`Invalid slug: ${opts.slug}`);
 
   if (!CF_TOKEN || !CF_ZONE_ID) throw new Error('Missing Cloudflare envs: CLOUDFLARE_API_TOKEN / CLOUDFLARE_ZONE_ID');
   if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) throw new Error('Missing Vercel envs: VERCEL_TOKEN / VERCEL_PROJECT_ID');
 
-  const slug = opts.slug.toLowerCase();
+  const sheets = await loadSheets();
+  const resolved = await resolvePromotionTarget(sheets, opts);
+
+  const slug = resolved.slug.toLowerCase();
+  if (!isValidSlug(slug)) throw new Error(`Invalid slug: ${slug}`);
+
   const prodFqdn = `${slug}.${ROOT_DOMAIN}`;
   const prodUrl = `https://${prodFqdn}`;
 
-  const sheets = await loadSheets();
-  const rowHit = await findSheetRowBySlug(sheets, slug).catch(() => null);
+  const rowHit = resolved.rowHit || await findSheetRowBySlug(sheets, slug).catch(() => null);
   const row = rowHit?.row || [];
   const rowNum = rowHit?.rowNum || 0;
   const rowStatus = (row[2] || '').trim();
@@ -367,7 +513,7 @@ async function main() {
     throw new Error(`Row found but status is not LIVE (row ${rowNum}, status=${rowStatus})`);
   }
 
-  const sourceHost = resolveSourceHost(slug, rowUrl);
+  const sourceHost = resolveSourceHost(slug, rowUrl, resolved.sourceHintHost || '');
   const sourceCheck = await tenantApiCheck(sourceHost, slug, 3);
   if (!sourceCheck.code || !sourceCheck.markerOk) {
     throw new Error(`Source check failed on ${sourceHost}: sitehtml=${sourceCheck.code}, marker=${sourceCheck.markerOk}`);

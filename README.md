@@ -74,7 +74,14 @@ Use manual promotion when a preview tenant is approved.
 
 ```bash
 node scripts/promote-site.js --slug lead-1234
-# or
+# or by request id
+node scripts/promote-site.js --id rwz_mlvwlddz_kvgy
+# or by preview URL
+node scripts/promote-site.js --url https://lead-1234.preview.rewebz.com
+# or generic ref (slug/url/id)
+node scripts/promote-site.js --ref lead-1234
+
+# npm script alias
 npm run promote -- --slug lead-1234
 ```
 
