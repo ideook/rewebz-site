@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>디자인프롬프트 최종테스트 | 신뢰를 설계하는 전환형 랜딩</title>
+  <meta name="description" content="서울 기반 서비스 브랜드를 위한 신뢰 축적형 전환 페이지. 전문성, 검증 가능한 근거, 행동으로 이어지는 CTA 구조를 제안합니다." />
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --surface:#ffffff;
+      --ink:#0b1220;
+      --muted:#475569;
+      --line:#dbe3ef;
+      --primary:#0f172a;
+      --secondary:#0f766e;
+      --accent:#f59e0b;
+      --primary-2:#1e293b;
+      --ok:#0ea5a0;
+      --danger:#b91c1c;
+      --shadow:0 20px 40px rgba(15,23,42,.09);
+      --radius:18px;
+      --radius-sm:12px;
+      --container:min(1180px, 92vw);
+      --h1:clamp(2rem, 5vw, 4.2rem);
+      --h2:clamp(1.5rem, 3vw, 2.6rem);
+      --h3:clamp(1.1rem, 2vw, 1.45rem);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      font:500 16px/1.6 "Pretendard Variable","SUIT","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      background:
+        radial-gradient(1200px 600px at 90% -10%, rgba(15,118,110,.12), transparent 55%),
+        radial-gradient(900px 500px at -10% 10%, rgba(15,23,42,.08), transparent 50%),
+        var(--bg);
+      letter-spacing:-0.01em;
+    }
+
+    .container{width:var(--container); margin-inline:auto}
+    .section{padding:88px 0}
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:.86rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+      color:var(--secondary); background:#e8f7f4; border:1px solid #c8ebe6;
+      padding:7px 12px; border-radius:999px;
+    }
+    .section h2{
+      margin:14px 0 14px;
+      font:800 var(--h2)/1.2 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      letter-spacing:-0.03em;
+    }
+    .section p.lead{margin:0; color:var(--muted); font-size:1.06rem; max-width:74ch}
+
+    .btn{
+      border:0; border-radius:999px; cursor:pointer;
+      font-weight:700; letter-spacing:-.01em;
+      padding:13px 20px; display:inline-flex; gap:8px; align-items:center;
+      text-decoration:none; transition:.24s ease;
+    }
+    .btn.primary{background:linear-gradient(135deg,var(--secondary),#115e59); color:#fff; box-shadow:0 8px 24px rgba(15,118,110,.32)}
+    .btn.primary:hover{transform:translateY(-2px)}
+    .btn.ghost{background:#e9eef8; color:var(--primary)}
+    .btn.ghost:hover{background:#dae4f5}
+    .btn.accent{background:var(--accent); color:#1f1604}
+    .btn:focus-visible{outline:3px solid #93c5fd; outline-offset:2px}
+
+    /* Header */
+    .header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:blur(10px);
+      background:rgba(246,248,251,.8);
+      border-bottom:1px solid rgba(219,227,239,.8);
+    }
+    .nav{
+      height:76px; display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand{
+      font:900 1.05rem/1 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      color:var(--primary);
+      display:flex; align-items:center; gap:12px;
+      text-decoration:none;
+    }
+    .brand-mark{
+      width:34px; aspect-ratio:1; border-radius:10px;
+      background:conic-gradient(from 220deg,var(--secondary),#22c55e,var(--accent),var(--secondary));
+      box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), 0 6px 16px rgba(15,23,42,.18);
+    }
+    .menu{display:flex; align-items:center; gap:20px}
+    .menu a{
+      color:#334155; text-decoration:none; font-weight:650; font-size:.95rem;
+    }
+    .menu a:hover{color:var(--primary)}
+    .menu .btn{padding:10px 16px}
+
+    /* Hero */
+    .hero{
+      min-height:92vh;
+      display:grid; align-items:center;
+      padding:56px 0 48px;
+    }
+    .hero-grid{
+      display:grid; grid-template-columns:1.06fr .94fr; gap:30px; align-items:center;
+    }
+    .hero h1{
+      margin:14px 0 18px;
+      font:900 var(--h1)/1.05 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      letter-spacing:-0.04em; color:var(--primary);
+      max-width:14ch;
+    }
+    .hero .sub{
+      color:#334155; font-size:1.1rem; margin:0 0 28px; max-width:54ch;
+    }
+    .hero-cta{display:flex; gap:12px; flex-wrap:wrap}
+    .trust-tags{
+      margin-top:26px; display:flex; flex-wrap:wrap; gap:10px;
+    }
+    .tag{
+      background:#fff; border:1px solid var(--line); border-radius:999px;
+      padding:8px 12px; font-size:.9rem; color:#1e293b; font-weight:650;
+    }
+
+    .hero-visual{
+      position:relative; isolation:isolate;
+      border-radius:28px; padding:26px;
+      background:linear-gradient(160deg,#0f172a,#111c35 65%, #0f766e);
+      color:#e2e8f0;
+      box-shadow:0 28px 46px rgba(15,23,42,.35);
+      overflow:hidden;
+    }
+    .hero-visual::before{
+      content:"";
+      position:absolute; inset:-30%;
+      background:
+        repeating-linear-gradient(120deg, transparent 0 28px, rgba(255,255,255,.05) 28px 29px),
+        radial-gradient(circle at 10% 10%, rgba(245,158,11,.22), transparent 35%);
+      z-index:-1; animation:float 12s linear infinite;
+    }
+    @keyframes float{to{transform:translateY(-20px) rotate(5deg)}}
+    .mini-grid{display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:16px}
+    .mini-card{
+      padding:14px; border-radius:14px;
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
+    }
+    .mini-card strong{display:block; font-size:1.3rem; color:#fff}
+    .mini-card span{font-size:.9rem; color:#cbd5e1}
+
+    /* Moodboard */
+    .mood-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px}
+    .mood{
+      border-radius:20px; padding:22px; min-height:220px;
+      background:#fff; border:1px solid var(--line); box-shadow:var(--shadow);
+      position:relative; overflow:hidden;
+    }
+    .mood h3{margin:0 0 8px; font-size:1.15rem}
+    .mood p{margin:0; color:var(--muted); font-size:.96rem}
+    .mood::after{
+      content:""; position:absolute; right:-30px; bottom:-30px; width:130px; aspect-ratio:1;
+      border-radius:24px; transform:rotate(15deg);
+      opacity:.2;
+    }
+    .mood.a::after{background:#0f172a}
+    .mood.b::after{background:#0f766e}
+    .mood.c::after{background:#f59e0b}
+
+    /* Problem / Solution */
+    .split{
+      display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:24px;
+    }
+    .panel{
+      background:#fff; border:1px solid var(--line);
+      border-radius:18px; padding:22px; box-shadow:var(--shadow);
+    }
+    .panel h3{margin:0 0 12px}
+    .panel ul{margin:0; padding-left:18px; color:#334155}
+    .panel li+li{margin-top:10px}
+
+    /* USP */
+    .usp-grid{
+      margin-top:28px;
+      display:grid; grid-template-columns:repeat(2,1fr); gap:16px;
+    }
+    .usp{
+      background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px;
+      transition:.22s ease; box-shadow:var(--shadow);
+    }
+    .usp:hover{transform:translateY(-4px); box-shadow:0 24px 40px rgba(15,23,42,.12)}
+    .usp .num{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:32px; height:32px; border-radius:999px; font-size:.82rem;
+      background:#dff4f2; color:#0f766e; font-weight:800;
+    }
+    .usp h3{margin:10px 0 10px}
+    .usp dl{margin:0}
+    .usp dt{font-weight:800; margin-top:8px; color:#0f172a}
+    .usp dd{margin:2px 0 0; color:#475569}
+
+    /* Stats */
+    .stats-wrap{
+      margin-top:24px;
+      display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+    }
+    .stat{
+      background:linear-gradient(180deg,#ffffff,#f7fafc);
+      border:1px solid var(--line); border-radius:16px; padding:18px; text-align:center;
+    }
+    .stat .value{font:900 clamp(1.6rem,3vw,2.3rem)/1 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif; color:var(--primary)}
+    .stat .label{color:#475569; font-weight:650; font-size:.92rem}
+
+    /* Reviews */
+    .reviews{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px;
+    }
+    .review{
+      background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px;
+    }
+    .review p{margin:0 0 12px; color:#1e293b}
+    .meta{font-size:.9rem; color:#64748b; display:flex; gap:8px; flex-wrap:wrap}
+    .pill{background:#eef3fb; padding:4px 9px; border-radius:999px}
+
+    /* Process */
+    .timeline{
+      margin-top:26px;
+      display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+    }
+    .step{
+      position:relative;
+      background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px;
+    }
+    .step .time{color:var(--secondary); font-weight:800; font-size:.88rem}
+    .step h3{margin:6px 0 8px; font-size:1.05rem}
+    .step p{margin:0; color:#475569; font-size:.95rem}
+
+    /* FAQ */
+    .faq{margin-top:22px; display:grid; gap:10px}
+    .faq-item{
+      background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    }
+    .faq-q{
+      width:100%; text-align:left; background:none; border:0; cursor:pointer;
+      padding:16px 18px; font-weight:760; color:#0f172a;
+      display:flex; justify-content:space-between; gap:14px;
+    }
+    .faq-a{
+      max-height:0; overflow:hidden; transition:max-height .25s ease;
+      color:#475569; padding:0 18px;
+    }
+    .faq-item.open .faq-a{max-height:180px; padding:0 18px 16px}
+
+    /* Mid CTA */
+    .banner{
+      border-radius:24px; padding:28px;
+      background:linear-gradient(120deg,#0f172a,#1e293b 60%,#0f766e);
+      color:#e2e8f0; display:flex; justify-content:space-between; gap:18px; align-items:center;
+      box-shadow:0 30px 45px rgba(15,23,42,.25);
+    }
+    .banner h3{margin:0 0 8px; font-size:1.5rem}
+    .banner p{margin:0; color:#cbd5e1}
+
+    /* Form */
+    .contact-wrap{
+      display:grid; grid-template-columns:1.1fr .9fr; gap:16px; margin-top:24px;
+    }
+    .card{
+      background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:var(--shadow);
+    }
+    .form-grid{display:grid; gap:12px}
+    label{font-weight:700; color:#1e293b; font-size:.94rem}
+    input, textarea, select{
+      width:100%; margin-top:6px;
+      border:1px solid #cbd5e1; border-radius:12px; padding:12px 13px;
+      font:500 .98rem/1.4 "Pretendard Variable","SUIT","Noto Sans KR",sans-serif;
+      background:#fff;
+    }
+    input:focus, textarea:focus, select:focus{
+      outline:3px solid #bfdbfe; border-color:#93c5fd;
+    }
+    .error{color:var(--danger); font-size:.86rem; min-height:1.1em}
+    .success{
+      margin-top:12px; padding:12px 14px; border-radius:12px;
+      background:#ecfdf5; border:1px solid #99f6e4; color:#065f46;
+      display:none;
+    }
+
+    /* Footer */
+    footer{
+      margin-top:70px; border-top:1px solid var(--line); padding:34px 0 48px; color:#64748b;
+    }
+    .foot-grid{display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:18px}
+    .foot-grid h4{color:#334155; margin:0 0 8px}
+
+    /* Mobile floating CTA */
+    .float-cta{
+      position:fixed; left:50%; transform:translateX(-50%);
+      bottom:16px; z-index:60; display:none;
+      width:min(92vw,460px);
+    }
+    .float-cta .btn{width:100%; justify-content:center; padding:14px 18px}
+
+    /* reveal */
+    .reveal{opacity:0; transform:translateY(18px); transition:.55s ease}
+    .reveal.show{opacity:1; transform:none}
+
+    @media (max-width: 980px){
+      .hero-grid,.split,.usp-grid,.reviews,.timeline,.stats-wrap,.contact-wrap,.foot-grid{grid-template-columns:1fr}
+      .mood-grid{grid-template-columns:1fr}
+      .menu a.link{display:none}
+      .hero{min-height:auto}
+      .section{padding:68px 0}
+      .float-cta{display:block}
+      body{padding-bottom:76px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{animation:none!important; transition:none!important}
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+<body>
+  <header class="header" aria-label="상단 고정 헤더">
+    <div class="container nav">
+      <a href="#top" class="brand" aria-label="디자인프롬프트 최종테스트 홈">
+        <span class="brand-mark" aria-hidden="true"></span>
+        디자인프롬프트 최종테스트
+      </a>
+      <nav class="menu" aria-label="주요 메뉴">
+        <a class="link" href="#usp">특장점</a>
+        <a class="link" href="#result">성과</a>
+        <a class="link" href="#process">프로세스</a>
+        <a class="link" href="#faq">FAQ</a>
+        <a class="btn primary" href="#contact">문의하기</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero section">
+      <div class="container hero-grid">
+        <div class="reveal">
+          <span class="eyebrow">서울 기반 서비스 브랜드</span>
+          <h1>신뢰를 설계하면, 전환은 따라옵니다.</h1>
+          <p class="sub">
+            소개를 넘어 전환까지 이어지는 구조를 만듭니다.
+            첫 스크롤에서 전문성을 보여주고, 마지막 스크롤에서 문의를 결정하게 합니다.
+          </p>
+          <div class="hero-cta">
+            <a href="#contact" class="btn primary">무료 진단 요청하기</a>
+            <a href="#process" class="btn ghost">진행 방식 보기</a>
+          </div>
+          <div class="trust-tags" aria-label="신뢰 지표">
+            <span class="tag">평균 2시간 이내 1차 응답</span>
+            <span class="tag">누적 프로젝트 320+</span>
+            <span class="tag">고객 만족도 4.8 / 5</span>
+          </div>
+        </div>
+
+        <aside class="hero-visual reveal" aria-label="핵심 성과 요약">
+          <strong style="font-size:1.2rem">브랜드 신뢰 축적형 전환 프레임</strong>
+          <p style="margin:8px 0 0;color:#cbd5e1">
+            명확한 전문성 → 검증 가능한 근거 → 행동 유도 CTA
+          </p>
+          <div class="mini-grid">
+            <div class="mini-card">
+              <strong><span data-count="38">0</span>%</strong>
+              <span>문의 전환율 개선</span>
+            </div>
+            <div class="mini-card">
+              <strong><span data-count="2">0</span>h</strong>
+              <span>평균 초기 응답</span>
+            </div>
+            <div class="mini-card">
+              <strong><span data-count="91">0</span>%</strong>
+              <span>제안서 채택률</span>
+            </div>
+            <div class="mini-card">
+              <strong><span data-count="4">0</span>단계</strong>
+              <span>표준 프로세스</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="mood">
+      <div class="container">
+        <span class="eyebrow">Brand Moodboard</span>
+        <h2>브랜드 무드보드 & 비주얼 컨셉 제안</h2>
+        <p class="lead">신뢰, 구조화, 선명한 전문성. 업종 특성과 의사결정 맥락에 맞춰 비주얼 방향을 먼저 합의합니다.</p>
+        <div class="mood-grid">
+          <article class="mood a reveal">
+            <h3>컨셉 A · Clean Editorial</h3>
+            <p>화이트+네이비 중심의 정제된 정보 편집. 핵심 메시지의 가독성과 신뢰감을 최우선으로 설계합니다.</p>
+          </article>
+          <article class="mood b reveal">
+            <h3>컨셉 B · Modern Studio</h3>
+            <p>유리/메탈 질감과 구조적 그리드로 전문성의 밀도를 높입니다. 세련된 실무형 인상을 강화합니다.</p>
+          </article>
+          <article class="mood c reveal">
+            <h3>컨셉 C · Human Trust</h3>
+            <p>실제 협업/상담 장면을 중심으로 인간적 신뢰를 전달합니다. 서비스업 특유의 응대 품질을 부각합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="problem">
+      <div class="container">
+        <span class="eyebrow">Problem → Solution</span>
+        <h2>고객이 겪는 불편을, 전환 가능한 구조로 바꿉니다</h2>
+        <div class="split">
+          <article class="panel reveal">
+            <h3>자주 겪는 문제 3가지</h3>
+            <ul>
+              <li>“서비스는 좋아 보이는데, 선택할 확신이 부족하다.”</li>
+              <li>“업체 간 차이가 애매해 비교가 길어진다.”</li>
+              <li>“문의는 하고 싶지만, 다음 단계가 불명확하다.”</li>
+            </ul>
+          </article>
+          <article class="panel reveal">
+            <h3>우리의 해결 구조 3가지</h3>
+            <ul>
+              <li>첫 화면에서 가치 제안과 신뢰 근거를 동시에 제시</li>
+              <li>USP·성과·리뷰를 한 흐름으로 연결해 비교 비용 축소</li>
+              <li>모바일 기준 간편 폼 + 응답 SLA로 즉시 행동 유도</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="usp">
+      <div class="container">
+        <span class="eyebrow">USP</span>
+        <h2>설득은 감이 아니라 구조입니다</h2>
+        <p class="lead">각 특장점은 “근거 · 사례 · 효과”로 설명합니다. 추상이 아닌 검증 가능한 언어로 신뢰를 만듭니다.</p>
+
+        <div class="usp-grid">
+          <article class="usp reveal">
+            <span class="num">01</span>
+            <h3>전략적 기획력</h3>
+            <dl>
+              <dt>근거</dt><dd>유입-탐색-문의 단계별 이탈 요인 분석</dd>
+              <dt>사례</dt><dd>메시지 구조 재정렬 후 체류시간 1.7배 증가</dd>
+              <dt>효과</dt><dd>핵심 고객의 비교 검토 시간을 단축</dd>
+            </dl>
+          </article>
+          <article class="usp reveal">
+            <span class="num">02</span>
+            <h3>실행 정확도</h3>
+            <dl>
+              <dt>근거</dt><dd>컴포넌트화된 UI 시스템과 체크리스트 운영</dd>
+              <dt>사례</dt><dd>리뉴얼 프로젝트 평균 수정 라운드 30% 감소</dd>
+              <dt>효과</dt><dd>런칭 지연 리스크 최소화</dd>
+            </dl>
+          </article>
+          <article class="usp reveal">
+            <span class="num">03</span>
+            <h3>응대·커뮤니케이션 품질</h3>
+            <dl>
+              <dt>근거</dt><dd>요청 접수 즉시 상태 공유 + 명확한 책임 구간</dd>
+              <dt>사례</dt><dd>고객 만족도 4.8/5, 재의뢰율 72%</dd>
+              <dt>효과</dt><dd>불확실성 감소로 의사결정 속도 향상</dd>
+            </dl>
+          </article>
+          <article class="usp reveal">
+            <span class="num">04</span>
+            <h3>전환 중심 개선 사이클</h3>
+            <dl>
+              <dt>근거</dt><dd>성과 데이터 기반 주간 개선 루프 운영</dd>
+              <dt>사례</dt><dd>CTA 문구/위치 A/B 테스트로 문의율 상승</dd>
+              <dt>효과</dt><dd>한 번 제작이 아닌 지속 개선 구조 확보</dd>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="result">
+      <div class="container">
+        <span class="eyebrow">Performance Highlight</span>
+        <h2>숫자로 확인되는 성과 하이라이트</h2>
+        <div class="stats-wrap">
+          <article class="stat reveal">
+            <div class="value"><span data-count="38">0</span>%</div>
+            <div class="label">평균 문의율 개선</div>
+          </article>
+          <article class="stat reveal">
+            <div class="value"><span data-count="320">0</span>+</div>
+            <div class="label">누적 진행 프로젝트</div>
+          </article>
+          <article class="stat reveal">
+            <div class="value"><span data-count="2">0</span>시간</div>
+            <div class="label">평균 1차 응답 속도</div>
+          </article>
+          <article class="stat reveal">
+            <div class="value"><span data-count="91">0</span>%</div>
+            <div class="label">제안서 채택률</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="reviews">
+      <div class="container">
+        <span class="eyebrow">Review & Reference</span>
+        <h2>짧지만 강한 고객 코멘트</h2>
+        <div class="reviews">
+          <article class="review reveal">
+            <p>“단순히 예쁜 디자인이 아니라, 왜 문의가 늘어나는지 구조로 설명해줘서 신뢰가 생겼습니다.”</p>
+            <div class="meta">
+              <span>김○○ · 마케팅팀 리더</span><span class="pill">B2B 서비스</span>
+            </div>
+          </article>
+          <article class="review reveal">
+            <p>“비교 중이던 3개 업체 중 가장 커뮤니케이션이 명확했습니다. 일정·범위·성과가 한눈에 보였어요.”</p>
+            <div class="meta">
+              <span>이○○ · 운영총괄</span><span class="pill">로컬 서비스</span>
+            </div>
+          </article>
+          <article class="review reveal">
+            <p>“모바일 문의 경험이 좋아져서 실제 인바운드 리드 품질이 눈에 띄게 좋아졌습니다.”</p>
+            <div class="meta">
+              <span>박○○ · 사업개발 매니저</span><span class="pill">전문 서비스업</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="process">
+      <div class="container">
+        <span class="eyebrow">Step 1–4</span>
+        <h2>문의부터 실행·리포트까지, 예측 가능한 4단계</h2>
+        <div class="timeline">
+          <article class="step reveal">
+            <div class="time">Step 1 · 30분 이내</div>
+            <h3>문의 접수</h3>
+            <p>핵심 목적과 현황을 빠르게 파악하고 1차 상담 가능 시간을 안내합니다.</p>
+          </article>
+          <article class="step reveal">
+            <div class="time">Step 2 · 1~2일</div>
+            <h3>진단</h3>
+            <p>현재 페이지 구조와 전환 병목 지점을 분석해 우선순위를 도출합니다.</p>
+          </article>
+          <article class="step reveal">
+            <div class="time">Step 3 · 2~3일</div>
+            <h3>맞춤 제안</h3>
+            <p>디자인 방향, 실행 범위, 일정, 예상 효과를 문서로 제시합니다.</p>
+          </article>
+          <article class="step reveal">
+            <div class="time">Step 4 · 주간 리포트</div>
+            <h3>실행/리포트</h3>
+            <p>구현 후 성과를 추적하며 개선 사이클을 통해 전환을 고도화합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <span class="eyebrow">FAQ</span>
+        <h2>자주 묻는 질문</h2>
+        <div class="faq" role="list">
+          <div class="faq-item reveal">
+            <button class="faq-q" aria-expanded="false">비용은 어떻게 산정되나요? <span>＋</span></button>
+            <div class="faq-a"><p>목표, 페이지 볼륨, 필요 기능에 따라 범위를 설정해 견적합니다. 초기 상담 후 48시간 내 상세 제안서를 전달합니다.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q" aria-expanded="false">평균 진행 기간은 어느 정도인가요? <span>＋</span></button>
+            <div class="faq-a"><p>일반적으로 2~4주입니다. 단, 콘텐츠 준비도와 검수 속도에 따라 단축 또는 연장될 수 있습니다.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q" aria-expanded="false">커뮤니케이션은 어떤 방식으로 진행하나요? <span>＋</span></button>
+            <div class="faq-a"><p>주 1회 정기 공유 + 수시 채널 운영 방식입니다. 요청사항·진행상태·다음 액션을 문서화해 투명하게 공유합니다.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q" aria-expanded="false">산출물 범위와 수정 정책이 궁금합니다. <span>＋</span></button>
+            <div class="faq-a"><p>합의된 범위 내에서 디자인 산출물, 반응형 시안, 퍼블리싱 결과물을 제공합니다. 기본 수정 라운드는 제안서에 명시됩니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="banner reveal" role="region" aria-label="중간 문의 유도 배너">
+          <div>
+            <h3>지금 문의하면, 우리 브랜드 전환 개선안을 받습니다.</h3>
+            <p>현 페이지 진단 요약 + 우선 개선 포인트 + 예상 실행 로드맵을 제안드립니다.</p>
+          </div>
+          <a href="#contact" class="btn accent">지금 문의하고 맞춤 제안 받기</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="container">
+        <span class="eyebrow">Final CTA</span>
+        <h2>간편 문의 남기기</h2>
+        <p class="lead">최소 정보만 입력하면 됩니다. 접수 후 <strong>평균 2시간 이내</strong>에 다음 단계를 안내드립니다.</p>
+        <div class="contact-wrap">
+          <div class="card reveal">
+            <form id="leadForm" novalidate>
+              <div class="form-grid">
+                <div>
+                  <label for="name">담당자명 *</label>
+                  <input id="name" name="name" autocomplete="name" required />
+                  <div class="error" data-err-for="name" aria-live="polite"></div>
+                </div>
+                <div>
+                  <label for="contactInfo">연락처 또는 이메일 *</label>
+                  <input id="contactInfo" name="contactInfo" autocomplete="email" required />
+                  <div class="error" data-err-for="contactInfo" aria-live="polite"></div>
+                </div>
+                <div>
+                  <label for="interest">관심 서비스</label>
+                  <select id="interest" name="interest">
+                    <option value="">선택해주세요</option>
+                    <option>랜딩페이지 신규 구축</option>
+                    <option>기존 페이지 전환 개선</option>
+                    <option>브랜드/카피 리디자인</option>
+                    <option>상담 후 결정</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="message">문의 내용 *</label>
+                  <textarea id="message" name="message" rows="4" required placeholder="현재 상황, 목표, 원하는 일정 등을 간단히 적어주세요."></textarea>
+                  <div class="error" data-err-for="message" aria-live="polite"></div>
+                </div>
+              </div>
+              <button class="btn primary" type="submit" style="margin-top:14px">우리 브랜드 전환 개선안 받아보기</button>
+              <p class="success" id="successMsg">문의가 접수되었습니다. 2시간 이내 1차 회신 후, 진단 미팅 일정을 안내드리겠습니다.</p>
+            </form>
+          </div>
+
+          <aside class="card reveal" aria-label="응답 SLA 및 안내">
+            <h3 style="margin-top:0">문의 후 다음 단계</h3>
+            <ol style="margin:0;padding-left:18px;color:#334155">
+              <li>접수 확인 메시지 발송 (즉시)</li>
+              <li>담당자 1차 연락 (평균 2시간 이내)</li>
+              <li>핵심 이슈 진단 및 제안 일정 확정</li>
+            </ol>
+            <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+            <p style="margin:0;color:#475569">
+              SLA 기준: 영업일 09:00~18:00 (서울).<br />
+              급한 건은 문의 내용에 “긴급” 표시를 남겨주세요.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot-grid">
+      <section>
+        <h4>디자인프롬프트 최종테스트</h4>
+        <p style="margin:0">브랜드 신뢰 강화 + 문의 전환 개선을 위한 서울 기반 서비스 디자인 파트너.</p>
+      </section>
+      <section>
+        <h4>연락 채널</h4>
+        <p style="margin:0">Email: hello@example.design<br>Tel: 02-0000-0000<br>서울특별시</p>
+      </section>
+      <section>
+        <h4>정책</h4>
+        <p style="margin:0">개인정보처리방침<br>이용약관<br>© 2026 디자인프롬프트 최종테스트</p>
+      </section>
+    </div>
+  </footer>
+
+  <div class="float-cta">
+    <a href="#contact" class="btn primary">빠르게 문의하기</a>
+  </div>
+
+  <script>
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach((entry)=>{
+        if(entry.isIntersecting) entry.target.classList.add('show');
+      });
+    }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // Count up
+    const counters = document.querySelectorAll('[data-count]');
+    const runCounter = (el) => {
+      const target = Number(el.dataset.count || 0);
+      const duration = 900;
+      const start = performance.now();
+      const tick = (now) => {
+        const p = Math.min((now - start) / duration, 1);
+        el.textContent = Math.floor(target * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const countObs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting && !e.target.dataset.done){
+          e.target.dataset.done = "1";
+          runCounter(e.target);
+        }
+      });
+    }, {threshold:.7});
+    counters.forEach(c=>countObs.observe(c));
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-item').forEach(item=>{
+      const btn = item.querySelector('.faq-q');
+      btn.addEventListener('click', ()=>{
+        const open = item.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(open));
+        btn.querySelector('span').textContent = open ? '－' : '＋';
+      });
+    });
+
+    // Basic form validation
+    const form = document.getElementById('leadForm');
+    const success = document.getElementById('successMsg');
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      success.style.display = 'none';
+
+      const required = ['name','contactInfo','message'];
+      let valid = true;
+
+      required.forEach(id=>{
+        const input = document.getElementById(id);
+        const err = form.querySelector(`[data-err-for="${id}"]`);
+        err.textContent = '';
+        if(!input.value.trim()){
+          err.textContent = '필수 항목을 입력해주세요.';
+          valid = false;
+        }
+      });
+
+      const contact = document.getElementById('contactInfo');
+      const cErr = form.querySelector('[data-err-for="contactInfo"]');
+      if(contact.value.trim() && contact.value.trim().length < 5){
+        cErr.textContent = '연락 가능한 정보를 정확히 입력해주세요.';
+        valid = false;
+      }
+
+      if(!valid) return;
+      success.style.display = 'block';
+      form.reset();
+    });
+  </script>
+</body>
+</html>
