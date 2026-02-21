@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { google } = require('googleapis');
@@ -86,7 +87,12 @@ function existsOnOrigin(slug) {
 
 async function hasSourceAvailable(slug) {
   if (R2.enabled) {
-    return hasLiveSiteSource(slug, R2);
+    const r2ok = await hasLiveSiteSource(slug, R2);
+    if (r2ok) return true;
+
+    // transitional fallback: allow legacy local source during migration.
+    const localFile = path.resolve(__dirname, '..', 'sites', slug, 'index.html');
+    return fs.existsSync(localFile);
   }
   return existsOnOrigin(slug);
 }
