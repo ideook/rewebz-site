@@ -5,6 +5,8 @@ const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_RANGE = process.env.GOOGLE_SHEET_RANGE || '시트1!A:N';
 const SA_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 
 async function headOk(url) {
   try {
@@ -13,6 +15,21 @@ async function headOk(url) {
   } catch {
     return 0;
   }
+}
+
+async function sendTelegram(text) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text,
+        disable_web_page_preview: true,
+      }),
+    });
+  } catch (_) {}
 }
 
 async function main() {
@@ -25,9 +42,12 @@ async function main() {
 
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
+    const id = r[0] || '';
     const status = (r[2] || '').trim();
-    const url = (r[13] || '').trim();
+    const business = r[3] || '';
     const notes = r[11] || '';
+    const slug = r[12] || '';
+    const url = (r[13] || '').trim();
     if (status !== 'DEV_DONE' || !url) continue;
 
     const code = await headOk(url);
@@ -42,8 +62,16 @@ async function main() {
           ],
         },
       });
+      await sendTelegram([
+        '✅ rewebz OPEN_DONE',
+        `- 업체: ${business || '(이름없음)'}`,
+        `- slug: ${slug || '-'}`,
+        `- URL: ${url}`,
+        `- HTTP: ${code}`,
+        `- ID: ${id}`,
+      ].join('\n'));
       done++;
-      console.log(`LIVE verified row ${i + 1}`);
+      console.log(`OPEN_DONE verified row ${i + 1}`);
     }
   }
 

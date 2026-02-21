@@ -23,8 +23,7 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
 const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+// notifications are handled only at OPEN_DONE stage (live-verify)
 
 function baseSlug(input = '') {
   const s = (input || '')
@@ -241,26 +240,12 @@ async function run() {
       ]);
 
       console.log(`Processed ${id}: ${fqdn} (${nextStatus})`);
-      await sendTelegram([
-        '✅ rewebz 자동 처리 완료',
-        `- 업체: ${businessName || '(이름없음)'}`,
-        `- 상태: ${nextStatus}`,
-        `- URL: ${mockupUrl}`,
-        `- 메모: ${note}`,
-        `- ID: ${id}`,
-      ].join('\n'));
     } catch (err) {
       await updateRow(sheets, rowNum, [
         { col: 'C', val: 'DNS_ERROR' },
         { col: 'L', val: String(err.message).slice(0, 400) },
       ]);
       console.error(`Failed row ${rowNum}: ${err.message}`);
-      await sendTelegram([
-        '❌ rewebz 자동 처리 실패',
-        `- 업체: ${businessName || '(이름없음)'}`,
-        `- 에러: ${String(err.message).slice(0, 300)}`,
-        `- ID: ${id}`,
-      ].join('\n'));
     }
   }
 }
