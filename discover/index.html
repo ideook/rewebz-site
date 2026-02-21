@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rewebz | 업체 조사 요청</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      :root {
+        --bg: #08101f;
+        --panel: #0f1c35;
+        --line: #243a68;
+        --text: #ecf4ff;
+        --sub: #a8bbdd;
+        --accent: #54f2b4;
+        --accent2: #6dd3ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(1200px 500px at 10% -10%, rgba(109,211,255,0.18), transparent), var(--bg);
+        color: var(--text);
+      }
+      .wrap { max-width: 980px; margin: 32px auto 80px; padding: 0 18px; }
+      .head h1 { margin: 0; font-size: 34px; letter-spacing: -0.03em; }
+      .head p { margin: 8px 0 0; color: var(--sub); }
+      .head .links { margin-top: 14px; display: flex; gap: 8px; }
+      .chip-link {
+        border: 1px solid var(--line);
+        color: #d2e2ff;
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+
+      .grid {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+      .panel {
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+      }
+      .panel h2 { margin: 0 0 10px; font-size: 18px; }
+      .panel h3 { margin: 0 0 10px; font-size: 14px; color: #d3e4ff; }
+      .sub { color: var(--sub); font-size: 13px; }
+
+      .search-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      input[type="text"], input[type="number"], textarea {
+        width: 100%;
+        background: #0b1730;
+        border: 1px solid #2a406f;
+        color: var(--text);
+        border-radius: 10px;
+        padding: 11px 12px;
+      }
+      textarea { min-height: 90px; resize: vertical; }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .btn-ghost { background: #13254a; color: #d9e8ff; border: 1px solid #2a406f; }
+      .btn-main { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #061220; width: 100%; }
+
+      #map {
+        height: 380px;
+        border-radius: 12px;
+        border: 1px solid #2a406f;
+        overflow: hidden;
+      }
+      .picked {
+        margin-top: 10px;
+        background: #0b1730;
+        border: 1px solid #2a406f;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 13px;
+        color: #d5e5ff;
+      }
+      .category-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      @media (max-width: 480px) { .category-grid { grid-template-columns: 1fr; } }
+      .cat {
+        background: #0b1730;
+        border: 1px solid #2a406f;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      .cat input { margin-right: 6px; }
+      .row { margin-bottom: 10px; }
+      .msg { margin-top: 10px; font-size: 13px; }
+      .ok { color: #62f2bb; }
+      .err { color: #ff8f9a; }
+      .warn { color: #ffd26d; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="head">
+        <h1>업체 조사 요청</h1>
+        <p>위치 + 업종을 지정하면 후보 업체를 수집할 조사 작업을 생성합니다.</p>
+        <div class="links">
+          <a class="chip-link" href="/apply">기존 신청 양식</a>
+          <a class="chip-link" href="/">rewebz 메인</a>
+        </div>
+      </div>
+
+      <form id="discoveryForm" class="grid">
+        <section class="panel">
+          <h2>1) 위치 선택</h2>
+          <p class="sub">기본은 지도 클릭입니다. 검색/현재 위치 버튼으로 보조할 수 있어요.</p>
+
+          <div class="search-row">
+            <input id="addrInput" type="text" placeholder="예: 송파구 방이동, 잠실역 8번 출구" />
+            <button class="btn-ghost" type="button" id="searchBtn">검색</button>
+            <button class="btn-ghost" type="button" id="myLocBtn">현재위치</button>
+          </div>
+
+          <div id="map"></div>
+
+          <div class="picked" id="pickedInfo">아직 위치가 선택되지 않았습니다.</div>
+
+          <div class="row" style="margin-top:10px;">
+            <h3>반경(미터)</h3>
+            <input id="radiusInput" type="number" min="300" max="10000" step="100" value="2000" />
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>2) 업종 선택</h2>
+          <p class="sub">복수 선택 가능. 높은 위계 분류로 시작합니다.</p>
+          <div class="category-grid" id="categoryGrid"></div>
+
+          <div class="row" style="margin-top:14px;">
+            <h3>선호 키워드 (선택)</h3>
+            <input name="keyword" type="text" placeholder="예: 동네마트, 반찬가게, 24시" />
+          </div>
+
+          <div class="row">
+            <h3>추가 메모 (선택)</h3>
+            <textarea name="notes" placeholder="예: 홈페이지가 부실한 곳 우선, 리뷰 50개 미만"></textarea>
+          </div>
+
+          <button class="btn-main" type="submit">업체 조사 시작</button>
+          <div id="msg" class="msg"></div>
+        </section>
+      </form>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+      const CATEGORIES = [
+        '식음료/카페',
+        '마트/편의/생활',
+        '병원/약국/건강',
+        '뷰티/헤어/네일',
+        '교육/학원',
+        '반려동물',
+        '자동차/정비',
+        '숙박/여행',
+        '부동산/인테리어',
+        '전문서비스',
+        '운동/레저',
+        '기타 로컬 비즈니스',
+      ];
+
+      const msg = document.getElementById('msg');
+      const pickedInfo = document.getElementById('pickedInfo');
+      const categoryGrid = document.getElementById('categoryGrid');
+      const addrInput = document.getElementById('addrInput');
+      const radiusInput = document.getElementById('radiusInput');
+
+      CATEGORIES.forEach((label, i) => {
+        const id = `cat_${i}`;
+        const item = document.createElement('label');
+        item.className = 'cat';
+        item.innerHTML = `<input type="checkbox" value="${label}" id="${id}" />${label}`;
+        categoryGrid.appendChild(item);
+      });
+
+      const map = L.map('map').setView([37.5665, 126.9780], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(map);
+
+      let marker = null;
+      let picked = null;
+
+      function renderPicked() {
+        if (!picked) {
+          pickedInfo.textContent = '아직 위치가 선택되지 않았습니다.';
+          return;
+        }
+        const link = `https://maps.google.com/?q=${picked.lat},${picked.lng}`;
+        pickedInfo.innerHTML = `선택 좌표: <b>${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}</b><br/>지도 링크: <a href="${link}" target="_blank" rel="noreferrer" style="color:#8de0ff">열기</a>`;
+      }
+
+      function setPicked(lat, lng) {
+        picked = { lat, lng };
+        if (!marker) marker = L.marker([lat, lng]).addTo(map);
+        marker.setLatLng([lat, lng]);
+        renderPicked();
+      }
+
+      map.on('click', (e) => {
+        setPicked(e.latlng.lat, e.latlng.lng);
+      });
+
+      document.getElementById('searchBtn').addEventListener('click', async () => {
+        const q = addrInput.value.trim();
+        if (!q) return;
+        msg.textContent = '주소 검색 중...';
+        msg.className = 'msg';
+
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          if (!data.length) throw new Error('검색 결과가 없습니다.');
+
+          const lat = Number(data[0].lat);
+          const lng = Number(data[0].lon);
+          map.setView([lat, lng], 16);
+          setPicked(lat, lng);
+
+          msg.textContent = '위치를 찾았습니다.';
+          msg.className = 'msg ok';
+        } catch (err) {
+          msg.textContent = `오류: ${err.message}`;
+          msg.className = 'msg err';
+        }
+      });
+
+      document.getElementById('myLocBtn').addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          msg.textContent = '현재 위치를 지원하지 않는 환경입니다.';
+          msg.className = 'msg err';
+          return;
+        }
+
+        msg.textContent = '현재 위치 가져오는 중...';
+        msg.className = 'msg';
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            map.setView([lat, lng], 16);
+            setPicked(lat, lng);
+            msg.textContent = '현재 위치를 반영했습니다.';
+            msg.className = 'msg ok';
+          },
+          (err) => {
+            msg.textContent = `현재 위치 오류: ${err.message}`;
+            msg.className = 'msg err';
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      });
+
+      document.getElementById('discoveryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const categories = [...categoryGrid.querySelectorAll('input:checked')].map((el) => el.value);
+        const radius = Number(radiusInput.value || 2000);
+
+        if (!picked) {
+          msg.textContent = '먼저 지도에서 위치를 선택해주세요.';
+          msg.className = 'msg err';
+          return;
+        }
+        if (!categories.length) {
+          msg.textContent = '최소 1개 업종을 선택해주세요.';
+          msg.className = 'msg err';
+          return;
+        }
+
+        const payload = {
+          center_lat: picked.lat,
+          center_lng: picked.lng,
+          radius_m: Math.max(300, Math.min(10000, radius)),
+          categories,
+          keyword: e.target.keyword.value.trim(),
+          notes: e.target.notes.value.trim(),
+          map_link: `https://maps.google.com/?q=${picked.lat},${picked.lng}`,
+        };
+
+        msg.textContent = '조사 요청 저장 중...';
+        msg.className = 'msg';
+
+        try {
+          const res = await fetch('/api/discovery-intake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.error || '저장 실패');
+
+          const warn = data?.saved === false ? ' (시트 저장 미설정)' : '';
+          msg.textContent = `요청 생성 완료${warn}! 조사 요청 ID: ${data.requestId}`;
+          msg.className = data?.saved === false ? 'msg warn' : 'msg ok';
+        } catch (err) {
+          msg.textContent = `오류: ${err.message}`;
+          msg.className = 'msg err';
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -68,6 +68,24 @@ Share the Google Sheet with the service account email as **Editor**.
 
 ---
 
+## Discovery intake form (new)
+
+- Page: `/discover`
+- API: `POST /api/discovery-intake`
+- Required payload:
+  - `center_lat`, `center_lng`
+  - `categories[]` (multi)
+  - optional: `radius_m`, `keyword`, `notes`, `map_link`
+
+Optional sheet save envs:
+
+- `GOOGLE_DISCOVERY_SHEET_ID`
+- `GOOGLE_DISCOVERY_SHEET_RANGE` (default `Discovery!A:K`)
+
+If discovery sheet env is not set, request still returns success and Telegram notification is sent.
+
+---
+
 ## Preview -> Production Promotion
 
 Use manual promotion when a preview tenant is approved.
