@@ -55,6 +55,20 @@ function safeErr(err) {
   return msg.slice(0, 400) || 'unknown';
 }
 
+function originUrl() {
+  try {
+    return sh('git remote get-url origin');
+  } catch {
+    return '';
+  }
+}
+
+function httpsGithubToSsh(url = '') {
+  const m = String(url).match(/^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/i);
+  if (!m) return '';
+  return `git@github.com:${m[1]}/${m[2]}.git`;
+}
+
 function gitSync() {
   if (!AUTO_GIT_PUSH) {
     logLine('git-sync-skip auto=0');
@@ -87,6 +101,25 @@ function gitSync() {
     sh('git push --porcelain');
     logLine('git-sync-ok push');
   } catch (e1) {
+    const err1 = safeErr(e1);
+
+    // Auto-heal common non-interactive auth failure on HTTPS remotes.
+    if (/could not read username for 'https:\/\/github\.com'/i.test(err1)) {
+      const current = originUrl();
+      const sshUrl = httpsGithubToSsh(current);
+      if (sshUrl) {
+        try {
+          sh(`git remote set-url origin ${JSON.stringify(sshUrl)}`);
+          sh('git push --porcelain');
+          logLine(`git-sync-ok push-via-ssh origin=${sshUrl}`);
+          return;
+        } catch (eSsh) {
+          logLine(`git-sync-fail ${safeErr(eSsh)}`);
+          throw eSsh;
+        }
+      }
+    }
+
     // First push on a branch may require upstream linkage.
     const branch = sh('git rev-parse --abbrev-ref HEAD') || 'main';
     try {
