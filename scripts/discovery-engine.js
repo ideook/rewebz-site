@@ -334,6 +334,8 @@ async function main() {
           );
           const scored = calcScore(p);
 
+          const plat = Number(p.location?.latitude || center.lat);
+          const plng = Number(p.location?.longitude || center.lng);
           all.push({
             request_id: requestId,
             collected_at: new Date().toISOString(),
@@ -346,7 +348,7 @@ async function main() {
             reviews: p.userRatingCount ?? '',
             website_url: p.websiteUri || '',
             phone: p.nationalPhoneNumber || '',
-            map_link: p.googleMapsUri || `https://maps.google.com/?q=${p.location?.latitude || center.lat},${p.location?.longitude || center.lng}`,
+            map_link: `https://maps.google.com/?q=${plat},${plng}`,
             score: scored.score,
             reason: scored.reason,
             source: 'places-api-v1',
@@ -408,12 +410,18 @@ async function main() {
       },
     });
 
-    const top = candidates.slice(0, 5).map((c, i) => `${i + 1}) ${c.title} | score:${c.score} | 리뷰:${c.reviews || 0} | ${c.distance_m}m`).join('\n');
+    const allCandidates = candidates.map((c, i) => {
+      const summary = `${i + 1}) ${c.title} | score:${c.score} | 리뷰:${c.reviews || 0} | ${c.distance_m}m`;
+      const mapLine = `   지도: ${c.map_link || '-'}`;
+      const idLine = `   place_id: ${c.place_id || '-'}`;
+      return [summary, mapLine, idLine].join('\n');
+    }).join('\n');
+
     await sendTelegram([
       '🔎 rewebz 업체 조사 완료',
       `- request: ${requestId}`,
       `- 후보 수: ${candidates.length}`,
-      top ? `- 상위 후보\n${top}` : '- 후보 없음',
+      allCandidates ? `- 후보 전체 목록\n${allCandidates}` : '- 후보 없음',
       `- 다음: 승인 시 '승인 ${requestId} <순번>' 또는 place_id로 전달`,
     ].join('\n'));
 
