@@ -342,6 +342,25 @@ async function tenantApiCheck(hostname, slug, tries = 3) {
   return { code: lastCode, markerOk: false };
 }
 
+async function waitProdRuntimeReady(prodUrl, prodHost, slug, timeoutSec = 600) {
+  const started = Date.now();
+  let lastHead = 0;
+  let lastSite = { code: 0, markerOk: false };
+
+  while (Date.now() - started < timeoutSec * 1000) {
+    lastHead = await headOk(prodUrl, 1);
+    if (lastHead >= 200 && lastHead < 400) {
+      lastSite = await tenantApiCheck(prodHost, slug, 1);
+      if (lastSite.code && lastSite.markerOk) {
+        return { headCode: lastHead, sitehtml: lastSite };
+      }
+    }
+    await sleep(5000);
+  }
+
+  throw new Error(`Prod runtime not ready: head=${lastHead}, sitehtml=${lastSite.code}, marker=${lastSite.markerOk}`);
+}
+
 async function loadSheets() {
   if (!SHEET_ID || !SA_EMAIL || !SA_KEY) return null;
   const auth = new google.auth.JWT({
@@ -555,15 +574,9 @@ async function main() {
     await waitUntilVercelDomainReady(prodFqdn, opts.timeoutSec);
     console.log('[promote] vercel_domain=ready');
 
-    const headCode = await headOk(prodUrl, 4);
-    if (!headCode || headCode >= 400) {
-      throw new Error(`Prod HEAD check failed: ${prodUrl} status=${headCode}`);
-    }
-
-    const prodSite = await tenantApiCheck(prodFqdn, slug, 4);
-    if (!prodSite.code || !prodSite.markerOk) {
-      throw new Error(`Prod sitehtml check failed: host=${prodFqdn} sitehtml=${prodSite.code} marker=${prodSite.markerOk}`);
-    }
+    const runtime = await waitProdRuntimeReady(prodUrl, prodFqdn, slug, opts.timeoutSec);
+    const headCode = runtime.headCode;
+    const prodSite = runtime.sitehtml;
 
     const checks = `promote:done(prod:${prodUrl}, checks:source:${sourceMode},dns:${dns.action},vercel:${vd.action},head:${headCode},sitehtml:${prodSite.code},marker:ok)`;
 
