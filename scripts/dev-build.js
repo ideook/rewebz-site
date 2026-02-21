@@ -35,6 +35,23 @@ function extractHtml(text = '') {
   return html;
 }
 
+function validateHtml(html='') {
+  const issues = [];
+  const h = html.toLowerCase();
+  if (!h.includes('<nav')) issues.push('missing_nav');
+  const anchorCount = (h.match(/href="#(intro|features|contact|details)"/g) || []).length;
+  if (anchorCount < 2) issues.push('menu_anchor_count_low');
+  if (!h.includes('id="hero"')) issues.push('missing_hero_id');
+  if (!h.includes('id="features"')) issues.push('missing_features_id');
+  if (!h.includes('id="details"')) issues.push('missing_details_id');
+  if (!h.includes('id="contact"')) issues.push('missing_contact_id');
+  if (!h.includes('<footer')) issues.push('missing_footer');
+  const heroHasImg = /id=["']hero["'][\s\S]{0,3000}<img/i.test(html);
+  if (!heroHasImg) issues.push('hero_image_missing');
+  if (h.includes('맞춤 목업 페이지')) issues.push('generic_phrase_detected');
+  return { ok: issues.length === 0, issues };
+}
+
 async function ensureVercelDomain(fqdn) {
   if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) return { ok: false, skipped: true };
   const url = `https://api.vercel.com/v10/projects/${encodeURIComponent(VERCEL_PROJECT_ID)}/domains?teamSlug=${encodeURIComponent(VERCEL_TEAM_SLUG)}`;
@@ -51,11 +68,23 @@ async function ensureVercelDomain(fqdn) {
 
 function buildWithWebAgent(input) {
   const prompt = [
-    'You are a frontend developer.',
-    'Read the DESIGN_SPEC and build a complete single-file HTML page.',
+    'You are a senior frontend developer implementing a one-off custom landing page.',
+    'Read DESIGN_SPEC and build a complete single-file HTML page.',
     'Output only HTML (<!doctype html> ...).',
     'Korean copy, production-quality visual polish, responsive layout.',
     'No external JS libraries. Inline CSS only.',
+    'ABSOLUTE RULES (must pass):',
+    '- one-page structure with anchors',
+    '- nav menu (2~3 items) linking to section ids',
+    '- large hero with image element inside #hero',
+    '- #features section for strengths',
+    '- #details section for detailed explanation',
+    '- #contact section for CTA/form',
+    '- footer included',
+    'PROHIBITED:',
+    '- generic template wording like "맞춤 목업 페이지"',
+    '- fallback-style minimal skeleton',
+    'If requirements are not met, regenerate before final output.',
     '',
     'Project input:',
     input,
@@ -127,6 +156,21 @@ async function main() {
           data: [
             { range: `시트1!C${i + 1}`, values: [['DEV_ERROR']] },
             { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:error:empty_html`]] },
+          ],
+        },
+      });
+      continue;
+    }
+
+    const v = validateHtml(html);
+    if (!v.ok) {
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SHEET_ID,
+        requestBody: {
+          valueInputOption: 'RAW',
+          data: [
+            { range: `시트1!C${i + 1}`, values: [['DEV_ERROR']] },
+            { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:validation_error:${v.issues.join(',')}`]] },
           ],
         },
       });

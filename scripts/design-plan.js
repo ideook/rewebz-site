@@ -17,21 +17,20 @@ function callDesignAgent(brief) {
     '코드를 만들지 말고, 반드시 Markdown 기획서만 작성한다.',
     '출력 형식: DESIGN_SPEC.md',
     '핵심 디자인 방향(반드시 반영):',
-    '- 스크롤이 충분히 내려가는 볼륨의 페이지',
-    '- 상단에 큰 히어로 섹션(임팩트 있는 카피 + 강한 비주얼)',
-    '- 업종에 맞는 컨셉 이미지/무드보드 방향 제안',
-    '- 어울리는 강조 포인트(배지, 하이라이트 블록, 통계/리뷰/성과 강조)',
-    '- 특장점 섹션을 설득력 있게 구조화',
-    '- 완전히 똑같지 않게 약간의 베리에이션(레이아웃/색/타이포/섹션 순서)',
+    '- 원페이지(one-page) 구성으로 설계한다.',
+    '- 상단에는 메뉴를 2~3개(예: 소개, 특징, 문의) 배치한다.',
+    '- 히어로 섹션은 크게 구성하고, 사진/이미지가 메인 비주얼로 크게 들어간다.',
+    '- 중단에는 특징/장점 섹션이 명확히 보이도록 구성한다.',
+    '- 하단에는 자세한 설명(프로세스/FAQ/상세안내) 섹션을 넣는다.',
+    '- 최하단에는 footer를 포함한다.',
     '',
     '포함 섹션:',
     '1) 브랜드 포지션/톤',
     '2) 핵심 사용자와 시나리오',
-    '3) 정보구조(IA)와 페이지 섹션 순서 (hero + 특장점 + 신뢰요소 + CTA 포함)',
+    '3) 정보구조(IA)와 페이지 섹션 순서 (상단 메뉴 + 대형 히어로 + 특징/장점 + 상세설명 + footer)',
     '4) 시각 시스템(컬러/타이포/레이아웃/모션)',
     '5) 카피 전략(헤드라인 3안, CTA 5안)',
-    '6) 차별화 포인트(기존 흔한 디자인과 어떻게 다를지)',
-    '7) 개발 handoff 체크리스트',
+    '6) 개발 handoff 체크리스트',
     '',
     '업체 입력:',
     brief,
@@ -92,10 +91,24 @@ async function main() {
     try {
       spec = callDesignAgent(brief);
     } catch (e) {
-      spec = `# DESIGN_SPEC\n\n자동 생성 실패: ${e.message}\n\n## Brief\n\n${brief}`;
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SHEET_ID,
+        requestBody: {
+          valueInputOption: 'RAW',
+          data: [
+            { range: `시트1!C${i + 1}`, values: [['DESIGN_ERROR']] },
+            { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}design:error:${String(e.message).slice(0,120)}`]] },
+          ],
+        },
+      });
+      continue;
     }
 
     if (!spec.startsWith('#')) spec = `# DESIGN_SPEC\n\n${spec}`;
+
+    // force required implementation contract for dev stage
+    spec += `\n\n## REQUIRED_IMPLEMENTATION_IDS\n- nav menu links: #intro, #features, #contact (2~3개)\n- hero section id: #hero\n- features section id: #features\n- details section id: #details\n- contact section id: #contact\n- footer required\n- hero must include a large image element\n`;
+
     fs.writeFileSync(specPath, spec + '\n');
 
     await sheets.spreadsheets.values.batchUpdate({
