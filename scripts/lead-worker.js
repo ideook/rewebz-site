@@ -230,12 +230,8 @@ async function run() {
       const mockupUrl = `https://${fqdn}`;
 
       let note = `dns:${dns.action}`;
+      // Stage 1 pipeline: stop at DNS completion only.
       let nextStatus = 'DNS_DONE';
-      const vercel = await ensureVercelDomain(fqdn);
-      if (vercel.ok) {
-        note += vercel.skipped ? ' | vercel:skipped' : vercel.already ? ' | vercel:exists' : ' | vercel:created';
-        nextStatus = vercel.skipped ? 'DNS_DONE' : 'MOCKUP_LIVE';
-      }
 
       await updateRow(sheets, rowNum, [
         { col: 'C', val: nextStatus },

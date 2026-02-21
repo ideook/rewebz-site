@@ -60,7 +60,8 @@ async function main() {
     const slug = (r[12] || '').trim();
 
     if (!slug) continue;
-    if (!['DNS_DONE', 'MOCKUP_LIVE', 'READY'].includes(status)) continue;
+    // Stage 2 pipeline: design agent only processes DNS-complete rows.
+    if (status !== 'DNS_DONE') continue;
 
     const siteDir = path.join(BASE_DIR, slug);
     const specPath = path.join(siteDir, 'DESIGN_SPEC.md');
@@ -94,8 +95,8 @@ async function main() {
       requestBody: {
         valueInputOption: 'RAW',
         data: [
-          { range: `시트1!C${i + 1}`, values: [['DESIGN_READY']] },
-          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}design-spec:ready`]] },
+          { range: `시트1!C${i + 1}`, values: [['DESIGN_DONE']] },
+          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}design-spec:done(gpt-5.3)`]] },
         ],
       },
     });
