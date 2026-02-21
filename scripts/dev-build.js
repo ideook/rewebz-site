@@ -188,22 +188,21 @@ async function main() {
     }
 
     const liveUrl = `https://${fqdn}`;
-    const live = await checkLive(liveUrl, 6);
-    const finalStatus = live.ok ? 'LIVE' : 'DEV_DONE';
+    const live = await checkLive(liveUrl, 2);
 
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SHEET_ID,
       requestBody: {
         valueInputOption: 'RAW',
         data: [
-          { range: `시트1!C${i + 1}`, values: [[finalStatus]] },
-          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:done(gpt-5.3) | ${domainNote} | health:${live.code||0}`]] },
+          { range: `시트1!C${i + 1}`, values: [['DEV_DONE']] },
+          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:done(gpt-5.3) | ${domainNote} | precheck:${live.code||0}`]] },
         ],
       },
     });
 
     processed++;
-    console.log(`dev done for ${slug} (${finalStatus})`);
+    console.log(`dev done for ${slug} (DEV_DONE)`);
   }
 
   console.log(`dev-build done: ${processed}`);
