@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
+const { execSync } = require('child_process');
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_RANGE = process.env.GOOGLE_SHEET_RANGE || '시트1!A:N';
@@ -34,7 +35,7 @@ function cards(goal='') {
   ];
 }
 
-function render(row) {
+function renderFallback(row) {
   const business = row.business_name || '업체명 미정';
   const category = row.category || '서비스업';
   const region = row.region || '지역 미정';
@@ -88,13 +89,49 @@ async function main() {
     const changed = JSON.stringify(prev) !== JSON.stringify(row);
     if (!fs.existsSync(indexPath) || changed) {
       fs.writeFileSync(briefPath, JSON.stringify(row, null, 2));
-      fs.writeFileSync(indexPath, render(row));
+
+      let html = '';
+      try {
+        html = generateWithDesignAgent(row);
+      } catch (e) {
+        html = '';
+      }
+      if (!html) html = renderFallback(row);
+
+      fs.writeFileSync(indexPath, html);
       if (prev) updated++; else created++;
       console.log(`${prev ? 'updated' : 'generated'} source for ${slug}`);
     }
   }
 
   console.log(`generate-site done: created=${created}, updated=${updated}`);
+}
+
+function extractHtml(text='') {
+  const t = String(text || '').trim();
+  const fenced = t.match(/```html\s*([\s\S]*?)```/i) || t.match(/```\s*([\s\S]*?)```/i);
+  const html = fenced ? fenced[1].trim() : t;
+  if (!/^<!doctype html>|^<html/i.test(html)) return '';
+  return html;
+}
+
+function generateWithDesignAgent(row) {
+  const brief = [
+    `업체명: ${row.business_name || ''}`,
+    `업종: ${row.category || ''}`,
+    `지역: ${row.region || ''}`,
+    `목표: ${row.goal || ''}`,
+    `기존URL: ${row.website_url || ''}`,
+    `slug: ${row.slug || ''}`,
+  ].join('\n');
+
+  const prompt = `당신은 웹디자인 전문 에이전트다. 아래 업체 정보를 바탕으로 단 하나의 랜딩페이지를 완전히 새로 설계해 HTML/CSS를 생성하라.\n요구사항:\n- 결과는 완전한 HTML 문서(<!doctype html> 포함)만 출력\n- 인라인 CSS 포함\n- 기존 샘플과 다른 레이아웃/스타일로 창의적으로 제작\n- 한국어 카피\n- CTA 포함\n- 외부 JS 라이브러리 금지\n\n${brief}`;
+
+  const cmd = `openclaw agent --agent design-studio --message ${JSON.stringify(prompt)} --json`;
+  const raw = execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  const parsed = JSON.parse(raw);
+  const text = parsed?.result?.payloads?.[0]?.text || '';
+  return extractHtml(text);
 }
 
 main().catch(e => { console.error(e.message); process.exit(1); });
