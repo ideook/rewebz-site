@@ -7,6 +7,7 @@
     "promote": "node scripts/promote-site.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.995.0",
     "googleapis": "^144.0.0"
   }
 }

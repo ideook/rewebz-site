@@ -12,6 +12,8 @@ const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 const BUILD_MARKER_NAME = 'rewebz-build-marker';
+const { getR2Config, hasLiveSiteSource } = require('../lib/r2');
+const R2 = getR2Config();
 
 function markerContent(slug = '') {
   return `rwz-live-v2:${slug}`;
@@ -82,23 +84,26 @@ function existsOnOrigin(slug) {
   }
 }
 
-function syncAndFetchOrigin() {
-  // keep this verifier self-sufficient: generate manifest + commit/push if needed
+async function hasSourceAvailable(slug) {
+  if (R2.enabled) {
+    return hasLiveSiteSource(slug, R2);
+  }
+  return existsOnOrigin(slug);
+}
+
+function syncForLegacyMode() {
+  // keep legacy/local mode self-sufficient: generate manifest + commit/push if needed
   try {
     execSync(`node ${JSON.stringify(path.join(__dirname, 'deploy-site.js'))}`, {
       cwd: path.resolve(__dirname, '..'),
       stdio: ['ignore', 'pipe', 'pipe'],
       encoding: 'utf8',
     });
-  } catch (_) {
-    // deploy-site logs details; verifier continues and will fail origin check if needed
-  }
+  } catch (_) {}
 
   try {
     sh('git fetch origin main --quiet');
-  } catch (_) {
-    // origin lookup may fail in non-git envs; handled by existsOnOrigin()
-  }
+  } catch (_) {}
 }
 
 async function sendTelegram(text) {
@@ -119,7 +124,9 @@ async function sendTelegram(text) {
 async function main() {
   if (!SHEET_ID || !SA_EMAIL || !SA_KEY) throw new Error('Missing Google envs');
 
-  syncAndFetchOrigin();
+  if (!R2.enabled) {
+    syncForLegacyMode();
+  }
 
   const auth = new google.auth.JWT({
     email: SA_EMAIL,
@@ -144,8 +151,8 @@ async function main() {
     // transitional compatibility: old OPEN_DONE rows can be promoted to LIVE when checks pass.
     if (!['DEV_DONE', 'OPEN_DONE'].includes(status) || !slug || !url) continue;
 
-    // hard gate 1: source is actually on origin/main
-    if (!existsOnOrigin(slug)) continue;
+    // hard gate 1: source exists in configured storage (R2 or legacy git)
+    if (!await hasSourceAvailable(slug)) continue;
 
     let host = `${slug}.${TENANT_ROOT_DOMAIN}`;
     try { host = new URL(url).hostname || host; } catch (_) {}
@@ -158,6 +165,8 @@ async function main() {
     const headCode = await headOk(url, 3);
     if (!headCode) continue;
 
+    const sourceLabel = R2.enabled ? 'r2' : 'git:origin/main';
+
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SHEET_ID,
       requestBody: {
@@ -166,7 +175,7 @@ async function main() {
           { range: `시트1!C${i + 1}`, values: [['LIVE']] },
           {
             range: `시트1!L${i + 1}`,
-            values: [[`${notes ? notes + ' | ' : ''}live:verified(git:origin/main,sitehtml:${sitehtml.code},marker:ok,head:${headCode})`]],
+            values: [[`${notes ? notes + ' | ' : ''}live:verified(source:${sourceLabel},sitehtml:${sitehtml.code},marker:ok,head:${headCode})`]],
           },
         ],
       },
@@ -177,7 +186,7 @@ async function main() {
       `- 업체: ${business || '(이름없음)'}`,
       `- slug: ${slug}`,
       `- URL: ${url}`,
-      `- checks: git(origin/main) + sitehtml(${sitehtml.code}) + marker(ok) + http(${headCode})`,
+      `- checks: source(${sourceLabel}) + sitehtml(${sitehtml.code}) + marker(ok) + http(${headCode})`,
       `- ID: ${id}`,
     ].join('\n'));
 

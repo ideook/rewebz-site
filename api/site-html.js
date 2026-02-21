@@ -4,6 +4,7 @@ const path = require('path');
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
 const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || `preview.${ROOT_DOMAIN}`;
 const LEGACY_TENANT_ROOT_DOMAIN = process.env.LEGACY_TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
+const { getLiveHtmlForSlug } = require('../lib/r2');
 
 function hostFromReq(req) {
   return String(req.headers['x-forwarded-host'] || req.headers.host || '').toLowerCase().split(':')[0];
@@ -38,13 +39,18 @@ module.exports = async (req, res) => {
     const slug = slugFromHost(hostFromReq(req));
     if (!slug) return res.status(200).json({ ok: true, kind: 'root' });
 
+    const r2 = await getLiveHtmlForSlug(slug).catch(() => null);
+    if (r2?.html) {
+      return res.status(200).json({ ok: true, kind: 'tenant', slug, html: r2.html, source: 'r2', version: r2.version || '' });
+    }
+
     const filePath = path.join(process.cwd(), 'sites', slug, 'index.html');
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ ok: false, kind: 'tenant', error: 'site_source_not_found', slug });
     }
 
     const html = fs.readFileSync(filePath, 'utf8');
-    return res.status(200).json({ ok: true, kind: 'tenant', slug, html });
+    return res.status(200).json({ ok: true, kind: 'tenant', slug, html, source: 'local' });
   } catch (e) {
     return res.status(500).json({ ok: false, error: 'site_html_api_error', detail: e.message });
   }

@@ -102,3 +102,30 @@ Sheet/Telegram integration is optional but recommended:
 
 - Sheet: `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEET_ID`, `GOOGLE_SHEET_RANGE`
 - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+
+---
+
+## R2 storage migration (no redeploy per slug)
+
+When `R2_ENABLED=1`, generated tenant HTML is uploaded to R2:
+
+- `sites/{slug}/{version}/index.html`
+- `sites/{slug}/_live.json` (live pointer)
+
+`api/sitehtml` reads from R2 first, then falls back to local `sites/` for compatibility.
+
+### Required R2 env vars
+
+- `R2_ENABLED=1`
+- `R2_ACCOUNT_ID`
+- `R2_BUCKET`
+- `R2_ENDPOINT` (`https://<account_id>.r2.cloudflarestorage.com`)
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_KEY_PREFIX` (default `sites`)
+
+### Notes
+
+- `LOCAL_SITE_WRITE=0` keeps local source dirs minimal after upload.
+- `CLEAN_LOCAL_ON_R2=1` removes per-slug local dirs after successful DEV build.
+- Promotion script supports slug / request id / preview URL.

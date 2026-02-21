@@ -20,6 +20,8 @@ const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 const BUILD_MARKER_NAME = 'rewebz-build-marker';
+const { getR2Config, getLiveHtmlForSlug } = require('../lib/r2');
+const R2 = getR2Config();
 
 function parseArgs(argv) {
   const opts = {
@@ -515,7 +517,18 @@ async function main() {
   }
 
   const sourceHost = resolveSourceHost(slug, rowUrl, resolved.sourceHintHost || '');
-  const sourceCheck = await tenantApiCheck(sourceHost, slug, 3);
+
+  let sourceMode = 'preview-api';
+  let sourceCheck = await tenantApiCheck(sourceHost, slug, 3);
+
+  if ((!sourceCheck.code || !sourceCheck.markerOk) && R2.enabled && R2.ready) {
+    const r2 = await getLiveHtmlForSlug(slug, R2).catch(() => null);
+    if (r2?.html && hasBuildMarker(r2.html, slug)) {
+      sourceMode = 'r2';
+      sourceCheck = { code: 200, markerOk: true };
+    }
+  }
+
   if (!sourceCheck.code || !sourceCheck.markerOk) {
     throw new Error(`Source check failed on ${sourceHost}: sitehtml=${sourceCheck.code}, marker=${sourceCheck.markerOk}`);
   }
@@ -524,7 +537,7 @@ async function main() {
 
   try {
     console.log(`[promote] slug=${slug}`);
-    console.log(`[promote] source_host=${sourceHost} source_check=sitehtml:${sourceCheck.code},marker:ok`);
+    console.log(`[promote] source_mode=${sourceMode} source_host=${sourceHost} source_check=sitehtml:${sourceCheck.code},marker:ok`);
 
     const dns = await ensureProdDnsCname(prodFqdn, opts.dryRun);
     if (dns.created) created.dnsRecordId = dns.recordId;
@@ -552,7 +565,7 @@ async function main() {
       throw new Error(`Prod sitehtml check failed: host=${prodFqdn} sitehtml=${prodSite.code} marker=${prodSite.markerOk}`);
     }
 
-    const checks = `promote:done(prod:${prodUrl}, checks:dns:${dns.action},vercel:${vd.action},head:${headCode},sitehtml:${prodSite.code},marker:ok)`;
+    const checks = `promote:done(prod:${prodUrl}, checks:source:${sourceMode},dns:${dns.action},vercel:${vd.action},head:${headCode},sitehtml:${prodSite.code},marker:ok)`;
 
     if (!rowNum) {
       console.warn(`[promote] warning: sheet row not found for slug=${slug}`);
@@ -566,7 +579,7 @@ async function main() {
       `- slug: ${slug}`,
       rowId ? `- ID: ${rowId}` : '',
       `- prod: ${prodUrl}`,
-      `- checks: dns(${dns.action}) + vercel(${vd.action}) + head(${headCode}) + sitehtml(${prodSite.code}) + marker(ok)`,
+      `- checks: source(${sourceMode}) + dns(${dns.action}) + vercel(${vd.action}) + head(${headCode}) + sitehtml(${prodSite.code}) + marker(ok)`,
     ].filter(Boolean).join('\n'), opts.noTelegram);
 
     console.log(`[promote] success ${slug} -> ${prodUrl}`);

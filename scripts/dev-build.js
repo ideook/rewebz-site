@@ -17,6 +17,14 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
 const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
 const BUILD_MARKER_NAME = 'rewebz-build-marker';
+const {
+  getR2Config,
+  uploadSiteHtml,
+} = require('../lib/r2');
+
+const R2 = getR2Config();
+const LOCAL_SITE_WRITE = (process.env.LOCAL_SITE_WRITE || (R2.enabled ? '0' : '1')) === '1';
+const CLEAN_LOCAL_ON_R2 = (process.env.CLEAN_LOCAL_ON_R2 || '1') === '1';
 
 function markerContent(slug='') {
   return `rwz-live-v2:${slug}`;
@@ -124,6 +132,7 @@ function buildWithWebAgent(input) {
 
 async function main() {
   if (!SHEET_ID || !SA_EMAIL || !SA_KEY) throw new Error('Missing Google envs');
+  if (R2.enabled && !R2.ready) throw new Error('R2 enabled but missing envs (R2_ACCOUNT_ID/R2_BUCKET/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY)');
   const auth = new google.auth.JWT({ email: SA_EMAIL, key: SA_KEY, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
   const sheets = google.sheets({ version: 'v4', auth });
 
@@ -204,7 +213,20 @@ async function main() {
       continue;
     }
 
-    fs.writeFileSync(indexPath, html);
+    let storageNote = '';
+    if (R2.enabled) {
+      const up = await uploadSiteHtml(slug, html, { version: '' }, R2);
+      storageNote = `r2:done(version:${up.version})`;
+      if (LOCAL_SITE_WRITE) {
+        fs.writeFileSync(indexPath, html);
+      } else if (fs.existsSync(indexPath)) {
+        fs.rmSync(indexPath, { force: true });
+      }
+    } else {
+      fs.writeFileSync(indexPath, html);
+      storageNote = 'storage:local';
+    }
+
     const fqdn = `${slug}.${TENANT_ROOT_DOMAIN}`;
     let domainNote = 'vercel:skipped';
     if (WILDCARD_TENANT_MODE) {
@@ -227,10 +249,14 @@ async function main() {
         valueInputOption: 'RAW',
         data: [
           { range: `시트1!C${i + 1}`, values: [['DEV_DONE']] },
-          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:done(gpt-5.3) | ${domainNote} | precheck:${live.code||0}`]] },
+          { range: `시트1!L${i + 1}`, values: [[`${notes ? notes + ' | ' : ''}dev:done(gpt-5.3) | ${storageNote} | ${domainNote} | precheck:${live.code||0}`]] },
         ],
       },
     });
+
+    if (R2.enabled && CLEAN_LOCAL_ON_R2 && fs.existsSync(siteDir)) {
+      try { fs.rmSync(siteDir, { recursive: true, force: true }); } catch (_) {}
+    }
 
     processed++;
     console.log(`dev done for ${slug} (DEV_DONE)`);
