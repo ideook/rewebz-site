@@ -11,6 +11,8 @@ const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const BASE_DIR = path.resolve(__dirname, '..', 'sites');
 const MAX_PER_RUN = Number(process.env.DEV_BUILD_MAX_PER_RUN || 1);
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
+const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
+const WILDCARD_TENANT_MODE = (process.env.WILDCARD_TENANT_MODE || '0') === '1';
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT || '';
 const VERCEL_TEAM_SLUG = process.env.VERCEL_TEAM_SLUG || '';
@@ -203,13 +205,17 @@ async function main() {
     }
 
     fs.writeFileSync(indexPath, html);
-    const fqdn = `${slug}.${ROOT_DOMAIN}`;
+    const fqdn = `${slug}.${TENANT_ROOT_DOMAIN}`;
     let domainNote = 'vercel:skipped';
-    try {
-      const vd = await ensureVercelDomain(fqdn);
-      if (vd.ok) domainNote = vd.created ? 'vercel:created' : 'vercel:exists';
-    } catch (e) {
-      domainNote = `vercel:error`;
+    if (WILDCARD_TENANT_MODE) {
+      domainNote = `vercel:wildcard(${TENANT_ROOT_DOMAIN})`;
+    } else {
+      try {
+        const vd = await ensureVercelDomain(fqdn);
+        if (vd.ok) domainNote = vd.created ? 'vercel:created' : 'vercel:exists';
+      } catch (e) {
+        domainNote = `vercel:error`;
+      }
     }
 
     const liveUrl = `https://${fqdn}`;

@@ -8,6 +8,8 @@ const BASE_DIR = path.join(ROOT, 'sites');
 const out = path.join(ROOT, 'logs', 'deploy-queue.log');
 const manifestPath = path.join(BASE_DIR, '_manifest.json');
 const AUTO_GIT_PUSH = (process.env.AUTO_GIT_PUSH || '1') === '1';
+const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
+const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
 const BUILD_MARKER_NAME = 'rewebz-build-marker';
 
 function markerContent(slug = '') {
@@ -160,7 +162,7 @@ function main() {
         category: meta.category || '',
         region: meta.region || '',
         goal: meta.goal || '',
-        mockup_url: meta.mockup_url || `https://${slug}.rewebz.com`,
+        mockup_url: meta.mockup_url || `https://${slug}.${TENANT_ROOT_DOMAIN}`,
         updated_at: fs.existsSync(index)
           ? fs.statSync(index).mtime.toISOString()
           : new Date().toISOString(),

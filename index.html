@@ -165,9 +165,6 @@
 
       (async () => {
         try {
-          const host = (location.hostname || '').toLowerCase();
-          const isRoot = host === 'rewebz.com' || host === 'www.rewebz.com';
-
           // 1) Tenant host: always serve generated per-site source when available.
           const siteRes = await fetch('/api/sitehtml', { cache: 'no-store' });
           let siteData = null;
@@ -180,8 +177,8 @@
             return;
           }
 
-          // 2) Tenant host with missing source: show explicit pending page (no generic mockup fallback).
-          if (!isRoot) {
+          // 2) Tenant host with missing source: explicit pending page.
+          if (siteRes.status === 404 && siteData && siteData.kind === 'tenant') {
             app.innerHTML = `
               <section class="hero">
                 <span class="badge">REWEBZ · SOURCE PENDING</span>
@@ -192,7 +189,7 @@
             return;
           }
 
-          // 3) Root host: gallery only
+          // 3) Root host (including preview root): gallery only
           const galleryRes = await fetch('/api/gallery', { cache: 'no-store' }).catch(() => null);
           const galleryData = galleryRes ? await galleryRes.json() : { items: [] };
           app.innerHTML = rootTemplate(galleryData?.items || []);

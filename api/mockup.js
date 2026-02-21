@@ -5,17 +5,34 @@ const SA_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const SHEET_RANGE = process.env.GOOGLE_SHEET_RANGE || '시트1!A:N';
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
+const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || `preview.${ROOT_DOMAIN}`;
+const LEGACY_TENANT_ROOT_DOMAIN = process.env.LEGACY_TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
 
 function cleanHost(req) {
   const h = (req.headers['x-forwarded-host'] || req.headers.host || '').toLowerCase();
   return h.split(':')[0];
 }
 
+function candidateSuffixes() {
+  return [...new Set([TENANT_ROOT_DOMAIN, LEGACY_TENANT_ROOT_DOMAIN, ROOT_DOMAIN])]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+}
+
+function sanitizeSlug(slug = '') {
+  const s = String(slug || '').trim().toLowerCase();
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(s)) return '';
+  return s;
+}
+
 function getSlugFromHost(host) {
   if (!host) return '';
-  if (host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}`) return '';
-  if (host.endsWith(`.${ROOT_DOMAIN}`)) {
-    return host.slice(0, -1 * (`.${ROOT_DOMAIN}`.length));
+  for (const suffix of candidateSuffixes()) {
+    if (host === suffix || host === `www.${suffix}`) return '';
+    if (host.endsWith(`.${suffix}`)) {
+      const slug = host.slice(0, -1 * (`.${suffix}`.length));
+      return sanitizeSlug(slug);
+    }
   }
   return '';
 }

@@ -8,6 +8,7 @@ const SHEET_RANGE = process.env.GOOGLE_SHEET_RANGE || '시트1!A:N';
 const SA_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
+const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 const BUILD_MARKER_NAME = 'rewebz-build-marker';
@@ -52,8 +53,8 @@ async function headOk(url, tries = 3) {
   return 0;
 }
 
-async function tenantApiOk(slug, tries = 3) {
-  const api = `https://${slug}.${ROOT_DOMAIN}/api/sitehtml`;
+async function tenantApiOk(hostname, slug, tries = 3) {
+  const api = `https://${hostname}/api/sitehtml`;
   for (let i = 0; i < tries; i++) {
     try {
       const r = await fetch(api, { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
@@ -146,8 +147,11 @@ async function main() {
     // hard gate 1: source is actually on origin/main
     if (!existsOnOrigin(slug)) continue;
 
+    let host = `${slug}.${TENANT_ROOT_DOMAIN}`;
+    try { host = new URL(url).hostname || host; } catch (_) {}
+
     // hard gate 2: deployed runtime can read tenant source from /api/sitehtml
-    const sitehtml = await tenantApiOk(slug, 3);
+    const sitehtml = await tenantApiOk(host, slug, 3);
     if (!sitehtml.code || !sitehtml.markerOk) continue;
 
     // hard gate 3: tenant URL serves successfully

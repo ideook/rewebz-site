@@ -2,16 +2,35 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'rewebz.com';
+const TENANT_ROOT_DOMAIN = process.env.TENANT_ROOT_DOMAIN || `preview.${ROOT_DOMAIN}`;
+const LEGACY_TENANT_ROOT_DOMAIN = process.env.LEGACY_TENANT_ROOT_DOMAIN || ROOT_DOMAIN;
 
 function hostFromReq(req) {
   return String(req.headers['x-forwarded-host'] || req.headers.host || '').toLowerCase().split(':')[0];
 }
 
+function candidateSuffixes() {
+  return [...new Set([TENANT_ROOT_DOMAIN, LEGACY_TENANT_ROOT_DOMAIN, ROOT_DOMAIN])]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+}
+
+function sanitizeSlug(slug = '') {
+  const s = String(slug || '').trim().toLowerCase();
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(s)) return '';
+  return s;
+}
+
 function slugFromHost(host) {
   if (!host) return '';
-  if (host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}`) return '';
-  if (!host.endsWith(`.${ROOT_DOMAIN}`)) return '';
-  return host.slice(0, -1 * (`.${ROOT_DOMAIN}`.length));
+  for (const suffix of candidateSuffixes()) {
+    if (host === suffix || host === `www.${suffix}`) return '';
+    if (host.endsWith(`.${suffix}`)) {
+      const slug = host.slice(0, -1 * (`.${suffix}`.length));
+      return sanitizeSlug(slug);
+    }
+  }
+  return '';
 }
 
 module.exports = async (req, res) => {
